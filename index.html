@@ -144,6 +144,16 @@ body {
 }
 .card .c-logic b { color:var(--accent); }
 
+/* ---- WRONG-ANSWER FEEDBACK: rule + highlighted case table ---- */
+.fb-rule { font-size:13px; color:var(--text); font-weight:600; line-height:1.45; margin-bottom:8px; text-align:center; }
+.fb-rule b { color:var(--wrong); }
+.fb-grid { display:grid; grid-template-columns:46px repeat(3,1fr); gap:3px; max-width:300px; margin:0 auto; }
+.fb-grid > div { padding:5px 2px; text-align:center; border-radius:5px; background:var(--surface3); font-size:13px; font-weight:700; color:var(--text-mid); }
+.fb-grid .h { background:transparent; color:var(--text-dim); font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:.5px; }
+.fb-grid .rowhit, .fb-grid .colhit { color:var(--text); background:var(--surface2); box-shadow:inset 0 0 0 1px var(--border); }
+.fb-grid .hit { color:#fff; font-weight:900; animation:hitpulse 0.7s ease 3; }
+@keyframes hitpulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0)} 50%{box-shadow:0 0 0 4px rgba(255,255,255,.25)} }
+
 /* Reveal state (after wrong answer) */
 .card .c-reveal {
   margin-top:12px; font-size:16px; font-weight:800; text-align:center;
@@ -871,6 +881,22 @@ function pickWeak() {
   return{c:CASES[Math.floor(Math.random()*4)],g:['m','f','n'][Math.floor(Math.random()*3)]};
 }
 
+// the full case×gender table, with the target cell lit up
+function miniGrid(c,g){
+  const GRID={nom:{m:'der',f:'die',n:'das'},akk:{m:'den',f:'die',n:'das'},dat:{m:'dem',f:'der',n:'dem'},gen:{m:'des',f:'der',n:'des'}};
+  const cols=['m','f','n'], colLabel={m:'M',f:'F',n:'N'};
+  const gc=g==='m'?'var(--mask)':g==='f'?'var(--fem)':'var(--neut)';
+  let h='<div class="fb-grid"><div class="h"></div>';
+  h+=cols.map(x=>`<div class="h ${x===g?'colhit':''}">${colLabel[x]}</div>`).join('');
+  for(const cc of CASES){
+    h+=`<div class="h ${cc===c?'rowhit':''}">${CN[cc].slice(0,3)}</div>`;
+    for(const x of cols){
+      const hit=cc===c&&x===g;
+      h+=`<div class="${hit?'hit':''}"${hit?` style="background:${gc}"`:''}>${GRID[cc][x]}</div>`;
+    }
+  }
+  return h+'</div>';
+}
 const CASE_RULE={
   nom:'Nominativ = the subject — the article is its base form.',
   akk:'Akkusativ = direct object: <b>only masculine</b> changes (der→den); die/das stay the same.',
@@ -996,9 +1022,9 @@ function answerDrill(answer,idx) {
     card.classList.add('shake');
     mascotReact(masc,q.gender,'sad');
     sfx('wrong');
-    // show WHY: the rule you broke, in a sentence, to prompt recall
+    // show WHY: the rule + the case table with the right cell lit up, to prompt recall
     const lDiv=card.querySelector('.c-logic');
-    if(lDiv){ lDiv.innerHTML=`<b style="color:var(--wrong)">Why?</b> ${q.rule}`; lDiv.style.fontSize='14px'; lDiv.style.lineHeight='1.5'; lDiv.style.color='var(--text)'; }
+    if(lDiv){ lDiv.innerHTML=`<div class="fb-rule">${q.rule}</div>${miniGrid(q.case,q.gender)}`; lDiv.style.background='transparent'; lDiv.style.padding='2px 0'; }
     const blank=card.querySelector('.c-blank');
     if(blank){blank.textContent=q.correct;blank.style.borderColor='var(--correct)';blank.style.color='var(--correct)';}
     // speak correct answer so they hear the right one
