@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Fallmeister</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%237c6cf0'/%3E%3Cstop offset='50%25' stop-color='%23f472b6'/%3E%3Cstop offset='100%25' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='128' height='128' rx='28' fill='%230a0a0f'/%3E%3Ctext x='64' y='82' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' font-size='72' fill='url(%23g)'%3EF%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0a0f">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #16161f;
+  --surface2: #1e1e2a;
+  --surface3: #252535;
+  --border: #2a2a3a;
+  --text: #eeeef4;
+  --text-dim: #7a7a95;
+  --text-mid: #aaaac0;
+  --mask: #7c6cf0;
+  --fem: #f472b6;
+  --neut: #22d3ee;
+  --correct: #34d399;
+  --wrong: #f87171;
+  --accent: #a78bfa;
+  --fire: #fb923c;
+  --gold: #fbbf24;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; overflow:hidden; }
+body {
+  font-family:'Inter',-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+}
+
+/* ---- TOP BAR ---- */
+.topbar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 20px;
+  flex-shrink:0;
+  z-index:10;
+}
+.topbar .logo { font-size:20px; font-weight:900; letter-spacing:-0.5px; }
+.topbar .logo span { color:var(--accent); }
+.topbar .stats { display:flex; gap:14px; font-size:13px; color:var(--text-dim); font-weight:600; }
+.topbar .fire-stat { color:var(--fire); }
+
+/* ---- SCREENS ---- */
+.screen { display:none; flex:1; flex-direction:column; overflow:hidden; }
+.screen.active { display:flex; }
+
+/* ---- HOME ---- */
+#homeScreen { padding:0 20px 20px; overflow-y:auto; }
+.home-header { text-align:center; padding:20px 0 16px; }
+.home-header h2 { font-size:13px; text-transform:uppercase; letter-spacing:3px; color:var(--text-dim); font-weight:700; }
+.mode-list { display:flex; flex-direction:column; gap:10px; }
+.mode-item {
+  display:flex; align-items:center; gap:16px;
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  padding:20px; cursor:pointer; transition:all 0.2s;
+}
+.mode-item:hover { border-color:var(--accent); transform:translateY(-1px); }
+.mode-item .mi-icon { font-size:32px; flex-shrink:0; }
+.mode-item .mi-text h3 { font-size:17px; font-weight:800; margin-bottom:2px; }
+.mode-item .mi-text p { font-size:13px; color:var(--text-dim); }
+.home-grid { margin-top:20px; }
+.home-grid h4 { font-size:12px; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); font-weight:700; margin-bottom:8px; }
+.mini-grid {
+  display:grid; grid-template-columns:50px repeat(3,1fr); gap:2px; font-size:13px;
+}
+.mini-grid .mg-cell { padding:10px 4px; text-align:center; border-radius:6px; font-weight:700; }
+.mini-grid .mg-label { color:var(--text-dim); font-weight:700; }
+.mg-0 { background:rgba(255,255,255,0.02); color:var(--text-dim); }
+.mg-1 { background:rgba(248,113,113,0.15); color:var(--wrong); }
+.mg-2 { background:rgba(251,191,36,0.15); color:var(--gold); }
+.mg-3 { background:rgba(52,211,153,0.12); color:var(--correct); }
+.mg-4 { background:rgba(52,211,153,0.25); color:var(--correct); }
+
+/* ---- CARD STACK ---- */
+.card-arena {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:relative; padding:0 20px; overflow:hidden;
+}
+.card-stack { position:relative; width:100%; max-width:440px; height:360px; }
+.card-stack.full { height:100%; max-height:calc(100vh - 180px); }
+.card {
+  position:absolute; width:100%; height:100%;
+  background:var(--surface); border:1px solid var(--border); border-radius:24px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:24px 22px; cursor:grab; user-select:none;
+  transition:box-shadow 0.3s; will-change:transform; touch-action:none;
+}
+.card:active { cursor:grabbing; }
+.card.behind-1 { transform:scale(0.95) translateY(14px); opacity:0.4; pointer-events:none; }
+.card.behind-2 { transform:scale(0.9) translateY(28px); opacity:0.2; pointer-events:none; }
+
+/* Gender glow on card — strong subliminal colour */
+.card.glow-m { border-color:rgba(124,108,240,0.5); box-shadow:0 0 40px rgba(124,108,240,0.12); background:linear-gradient(180deg, rgba(124,108,240,0.06) 0%, var(--surface) 50%); }
+.card.glow-f { border-color:rgba(244,114,182,0.5); box-shadow:0 0 40px rgba(244,114,182,0.12); background:linear-gradient(180deg, rgba(244,114,182,0.06) 0%, var(--surface) 50%); }
+.card.glow-n { border-color:rgba(34,211,238,0.5); box-shadow:0 0 40px rgba(34,211,238,0.12); background:linear-gradient(180deg, rgba(34,211,238,0.06) 0%, var(--surface) 50%); }
+
+/* Card content */
+.card .c-gender-bar {
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:10px;
+}
+.card .c-gender-emoji { font-size:24px; }
+.card .c-gender-label {
+  font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:2px;
+  padding:3px 10px; border-radius:99px;
+}
+.c-gender-label.m { background:rgba(124,108,240,0.15); color:var(--mask); }
+.c-gender-label.f { background:rgba(244,114,182,0.15); color:var(--fem); }
+.c-gender-label.n { background:rgba(34,211,238,0.15); color:var(--neut); }
+
+.card .c-badge {
+  font-size:13px; text-transform:uppercase; letter-spacing:2px;
+  color:var(--accent); font-weight:800; margin-bottom:4px;
+}
+.card .c-sentence {
+  font-size:32px; font-weight:900; text-align:center; line-height:1.3; margin-bottom:10px;
+}
+.card .c-blank {
+  display:inline-block; min-width:80px; border-bottom:3px solid; margin:0 6px;
+}
+.glow-m .c-blank { border-color:var(--mask); color:var(--mask); }
+.glow-f .c-blank { border-color:var(--fem); color:var(--fem); }
+.glow-n .c-blank { border-color:var(--neut); color:var(--neut); }
+.card .c-hint {
+  font-size:15px; color:var(--text-mid); font-weight:500;
+}
+.card .c-logic {
+  margin-top:10px; font-size:13px; color:var(--text-dim); font-weight:600;
+  background:var(--surface2); padding:8px 14px; border-radius:10px;
+  text-align:center; line-height:1.5;
+}
+.card .c-logic b { color:var(--accent); }
+
+/* Reveal state (after wrong answer) */
+.card .c-reveal {
+  margin-top:12px; font-size:16px; font-weight:800; text-align:center;
+}
+.card .c-reveal .answer { color:var(--correct); font-size:28px; }
+.card .c-reveal .explanation { font-size:13px; color:var(--text-mid); font-weight:600; margin-top:4px; }
+
+/* Fly-off */
+@keyframes flyRight { to { transform:translateX(150%) rotate(20deg); opacity:0; } }
+@keyframes flyLeft { to { transform:translateX(-150%) rotate(-20deg); opacity:0; } }
+@keyframes slideUp { from { transform:scale(0.92) translateY(40px); opacity:0; } to { transform:scale(1) translateY(0); opacity:1; } }
+.card.fly-right { animation:flyRight 0.35s ease-out forwards; pointer-events:none; }
+.card.fly-left { animation:flyLeft 0.35s ease-out forwards; pointer-events:none; }
+.card.slide-in { animation:slideUp 0.3s ease-out; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+.card.shake { animation:shake 0.4s ease; }
+
+/* Swipe overlays */
+.card .swipe-label {
+  position:absolute; top:20px; font-size:20px; font-weight:900;
+  padding:8px 18px; border-radius:10px; border:3px solid;
+  opacity:0; transition:opacity 0.1s; pointer-events:none;
+}
+.card .swipe-label.right { right:20px; color:var(--correct); border-color:var(--correct); transform:rotate(-12deg); }
+.card .swipe-label.wrong-label { left:20px; color:var(--wrong); border-color:var(--wrong); transform:rotate(12deg); }
+
+/* ---- OPTIONS STRIP ---- */
+.options-strip {
+  display:flex; gap:8px; padding:12px 20px 20px; justify-content:center; flex-shrink:0;
+}
+.opt-pill {
+  flex:1; max-width:100px; padding:16px 0; text-align:center;
+  background:var(--surface2); border:2px solid var(--border); border-radius:14px;
+  font-size:20px; font-weight:800; color:var(--text); cursor:pointer;
+  transition:all 0.15s; font-family:inherit; position:relative;
+}
+.opt-pill:hover { border-color:var(--accent); background:var(--surface3); transform:translateY(-1px); }
+.opt-pill .pill-key {
+  position:absolute; top:4px; left:10px; font-size:10px; color:var(--text-dim); font-weight:500;
+}
+.opt-pill.correct { border-color:var(--correct); background:rgba(52,211,153,0.12); color:var(--correct); }
+.opt-pill.wrong { border-color:var(--wrong); background:rgba(248,113,113,0.12); color:var(--wrong); }
+
+/* Gender-coloured noun in sentence */
+.c-noun-m { color:var(--mask); }
+.c-noun-f { color:var(--fem); }
+.c-noun-n { color:var(--neut); }
+
+/* ---- HUD ---- */
+.hud {
+  display:flex; justify-content:space-between; align-items:center; padding:8px 20px; flex-shrink:0;
+}
+.hud .hud-close {
+  width:38px; height:38px; border-radius:50%; background:var(--surface2);
+  border:1px solid var(--border); color:var(--text-dim); font-size:15px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:inherit;
+}
+.hud .hud-streak { font-size:20px; font-weight:900; display:flex; align-items:center; gap:4px; }
+.hud .hud-streak.on-fire { color:var(--fire); }
+.hud .hud-score { font-size:15px; color:var(--text-dim); font-weight:600; }
+.hud .hud-score b { color:var(--text); font-size:18px; }
+
+/* Timer */
+.timer-track { height:3px; background:var(--surface2); flex-shrink:0; overflow:hidden; }
+.timer-track .timer-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--fire)); transition:width 0.1s linear; }
+
+/* ---- TOAST ---- */
+.toast {
+  position:fixed; bottom:110px; left:50%; transform:translateX(-50%);
+  padding:12px 28px; border-radius:14px; font-size:15px; font-weight:700;
+  z-index:50; opacity:0; transition:opacity 0.2s; pointer-events:none;
+  white-space:nowrap; max-width:90vw; text-align:center;
+}
+.toast.show { opacity:1; }
+.toast.correct { background:rgba(52,211,153,0.15); color:var(--correct); border:1px solid rgba(52,211,153,0.3); }
+.toast.wrong { background:rgba(248,113,113,0.15); color:var(--wrong); border:1px solid rgba(248,113,113,0.3); }
+
+/* ---- RESULTS ---- */
+#resultsScreen { align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
+.result-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:24px;
+  padding:40px 28px; text-align:center; width:100%; max-width:420px;
+}
+.result-card h2 { font-size:24px; font-weight:900; margin-bottom:12px; }
+.result-card .r-score { font-size:72px; font-weight:900; color:var(--accent); line-height:1; }
+.result-card .r-sub { font-size:15px; color:var(--text-dim); margin:8px 0 28px; font-weight:600; }
+.result-btns { display:flex; gap:10px; justify-content:center; }
+.r-btn {
+  padding:14px 32px; border-radius:14px; font-size:16px; font-weight:700;
+  font-family:inherit; cursor:pointer; border:none; transition:all 0.15s;
+}
+.r-btn:hover { transform:translateY(-1px); }
+.r-btn.primary { background:var(--accent); color:#fff; }
+.r-btn.ghost { background:var(--surface2); color:var(--text-dim); border:1px solid var(--border); }
+
+/* ---- LESSON CARDS ---- */
+.lesson-card-content {
+  text-align:left; width:100%; overflow-y:auto; max-height:100%;
+  scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+}
+.lesson-card-content .lc-step { font-size:12px; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); font-weight:700; margin-bottom:4px; }
+.lesson-card-content h3 { font-size:22px; font-weight:900; margin-bottom:12px; }
+.lesson-card-content p { font-size:15px; line-height:1.7; color:var(--text-mid); margin-bottom:10px; }
+.lesson-card-content .l-mnemonic {
+  background:var(--surface2); border-radius:12px; padding:16px; margin:10px 0;
+  border-left:3px solid var(--accent); font-size:14px; line-height:1.7; color:var(--text);
+}
+.lesson-card-content .l-emoji { font-size:26px; margin-bottom:6px; }
+.gender-tag { display:inline-block; padding:2px 10px; border-radius:99px; font-size:13px; font-weight:800; }
+.gender-tag.m { background:rgba(124,108,240,0.2); color:var(--mask); }
+.gender-tag.f { background:rgba(244,114,182,0.2); color:var(--fem); }
+.gender-tag.n { background:rgba(34,211,238,0.2); color:var(--neut); }
+
+.l-grid {
+  display:grid; grid-template-columns:56px repeat(4,1fr); gap:1px;
+  background:var(--border); border-radius:8px; overflow:hidden; font-size:14px; font-weight:600; margin:10px 0;
+}
+.l-grid div { padding:8px 4px; text-align:center; background:var(--surface); }
+.l-grid .hdr { background:var(--surface2); color:var(--text-dim); font-weight:700; font-size:11px; text-transform:uppercase; }
+.l-grid .hl { color:var(--accent); font-weight:800; }
+
+.l-rule { background:var(--surface2); border-radius:10px; padding:12px 14px; margin:8px 0; }
+.l-rule .l-endings { font-size:15px; font-weight:800; margin-bottom:3px; }
+.l-rule .l-tip { font-size:13px; color:var(--text-dim); line-height:1.5; }
+
+/* ---- NINJA ---- */
+.ninja-arena {
+  flex:1; position:relative; overflow:hidden; margin:0 20px;
+  background:var(--surface); border-radius:20px; border:1px solid var(--border);
+}
+.falling-word {
+  position:absolute; border:2px solid; border-radius:12px;
+  padding:10px 16px; font-size:16px; font-weight:700; white-space:nowrap; text-align:center;
+}
+.falling-word.fw-m { background:rgba(124,108,240,0.08); border-color:var(--mask); color:var(--mask); }
+.falling-word.fw-f { background:rgba(244,114,182,0.08); border-color:var(--fem); color:var(--fem); }
+.falling-word.fw-n { background:rgba(34,211,238,0.08); border-color:var(--neut); color:var(--neut); }
+.falling-word .fw-case { font-size:10px; color:var(--text-dim); display:block; letter-spacing:1px; text-transform:uppercase; }
+.ninja-input-wrap { padding:12px 20px 20px; flex-shrink:0; }
+.ninja-input {
+  width:100%; background:var(--surface); border:2px solid var(--border); border-radius:14px;
+  padding:16px 20px; color:var(--text); font-size:20px; font-weight:700;
+  font-family:inherit; outline:none; text-align:center;
+}
+.ninja-input:focus { border-color:var(--accent); }
+
+/* ---- REF FAB ---- */
+.ref-fab {
+  position:fixed; bottom:16px; right:16px; z-index:100;
+  width:46px; height:46px; border-radius:50%;
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text-dim); font-size:18px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-family:inherit; box-shadow:0 4px 12px rgba(0,0,0,0.3);
+}
+.ref-panel {
+  position:fixed; bottom:72px; right:16px; z-index:100;
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  padding:16px; width:320px; display:none; box-shadow:0 12px 40px rgba(0,0,0,0.5);
+}
+.ref-panel.show { display:block; }
+.ref-panel .rp-title { font-size:11px; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); font-weight:700; margin-bottom:8px; }
+
+/* ---- SETTINGS FAB + PANEL ---- */
+.set-fab {
+  position:fixed; bottom:16px; right:74px; z-index:100;
+  width:46px; height:46px; border-radius:50%;
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text-dim); font-size:18px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-family:inherit; box-shadow:0 4px 12px rgba(0,0,0,0.3);
+}
+.set-panel {
+  position:fixed; bottom:72px; right:16px; z-index:100;
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  padding:16px; width:280px; display:none; box-shadow:0 12px 40px rgba(0,0,0,0.5);
+}
+.set-panel.show { display:block; }
+.set-panel .rp-title { font-size:11px; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); font-weight:700; margin-bottom:12px; }
+.set-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; }
+.set-row .set-label { font-size:14px; font-weight:600; }
+.set-row .set-sub { font-size:11px; color:var(--text-dim); }
+.toggle {
+  width:46px; height:26px; border-radius:99px; background:var(--surface3);
+  border:1px solid var(--border); position:relative; cursor:pointer; transition:background 0.2s; flex-shrink:0;
+}
+.toggle.on { background:var(--accent); border-color:var(--accent); }
+.toggle::after {
+  content:''; position:absolute; top:2px; left:2px; width:20px; height:20px;
+  border-radius:50%; background:#fff; transition:transform 0.2s;
+}
+.toggle.on::after { transform:translateX(20px); }
+
+/* ---- MASCOT ---- */
+.mascot { width:72px; height:72px; position:relative; flex-shrink:0; }
+.mascot-svg { width:100%; height:100%; display:block; overflow:visible; }
+.mascot .m-prop {
+  position:absolute; top:-6px; right:-4px; font-size:20px;
+  animation:propFloat 2.4s ease-in-out infinite;
+}
+@keyframes propFloat { 0%,100%{transform:translateY(0) rotate(-8deg)} 50%{transform:translateY(-5px) rotate(8deg)} }
+@keyframes mascotFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes mascotBounce { 0%{transform:translateY(0) scale(1)} 30%{transform:translateY(-20px) scale(1.1)} 55%{transform:translateY(0) scale(0.94)} 75%{transform:translateY(-6px) scale(1.02)} 100%{transform:translateY(0) scale(1)} }
+@keyframes mascotWobble { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-10deg)} 50%{transform:rotate(9deg)} 80%{transform:rotate(-5deg)} }
+@keyframes blink { 0%,90%,100%{transform:scaleY(1)} 95%{transform:scaleY(0.08)} }
+.mascot.idle { animation:mascotFloat 3s ease-in-out infinite; }
+.mascot.happy { animation:mascotBounce 0.6s ease; }
+.mascot.sad { animation:mascotWobble 0.5s ease; }
+.mascot.celebrate { animation:mascotBounce 0.7s ease infinite; }
+.mascot .eyes { animation:blink 4.5s infinite; transform-origin:50px 49px; }
+.mascot-big { width:130px; height:130px; margin:0 auto 8px; }
+
+/* Speaker button */
+.speaker-btn {
+  width:40px; height:40px; border-radius:50%; flex-shrink:0;
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text); font-size:18px; cursor:pointer; transition:all 0.15s;
+  display:inline-flex; align-items:center; justify-content:center; font-family:inherit;
+}
+.speaker-btn:hover { border-color:var(--accent); background:var(--surface3); transform:scale(1.05); }
+.speaker-btn:active { transform:scale(0.92); }
+.speaker-btn.pulsing { animation:speakerPulse 0.6s ease; }
+@keyframes speakerPulse { 0%,100%{box-shadow:0 0 0 0 rgba(167,139,250,0)} 50%{box-shadow:0 0 0 8px rgba(167,139,250,0.25)} }
+.card .c-speak-row { display:flex; align-items:center; gap:10px; margin-top:4px; }
+
+/* ---- CONFETTI ---- */
+.confetti-piece {
+  position:fixed; width:11px; height:11px; top:-20px; z-index:200;
+  pointer-events:none; border-radius:2px; will-change:transform;
+}
+@keyframes confettiFall { to { transform:translateY(110vh) rotate(720deg); opacity:0.2; } }
+
+/* ---- DAILY GOAL RING ---- */
+.goal-wrap { display:flex; align-items:center; gap:14px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px 18px; margin-bottom:16px; }
+.goal-ring { width:54px; height:54px; flex-shrink:0; }
+.goal-text h5 { font-size:14px; font-weight:800; margin-bottom:2px; }
+.goal-text p { font-size:12px; color:var(--text-dim); }
+
+@media (max-width:440px) {
+  .card-stack { height:300px; }
+  .card-stack.full { height:100%; max-height:calc(100vh - 160px); }
+  .card .c-sentence { font-size:26px; }
+  .opt-pill { padding:14px 0; font-size:18px; }
+}
+@media (min-height:800px) {
+  .card-stack { height:380px; }
+  .card-stack.full { max-height:calc(100vh - 180px); }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Fall<span>meister</span></div>
+  <div class="stats">
+    <span>Day <span id="dayCount">1</span></span>
+    <span class="fire-stat" id="bestStreak">0 best</span>
+  </div>
+</div>
+
+<div class="screen active" id="homeScreen">
+  <div class="home-header">
+    <div class="mascot idle" id="homeMascot" style="width:88px;height:88px;margin:0 auto 6px;"></div>
+    <h2>German Cases in 30 Days</h2>
+  </div>
+  <div class="goal-wrap" id="goalWrap"></div>
+  <div class="mode-list">
+    <div class="mode-item" onclick="startLessonSwipe()">
+      <div class="mi-icon">📖</div>
+      <div class="mi-text"><h3>Learn</h3><p>Swipe through mnemonics & rules</p></div>
+    </div>
+    <div class="mode-item" onclick="startDrill('article')">
+      <div class="mi-icon">⚡</div>
+      <div class="mi-text"><h3>Article Blitz</h3><p>60s — pick the right article, fast</p></div>
+    </div>
+    <div class="mode-item" onclick="startDrill('preposition')">
+      <div class="mi-icon">🎯</div>
+      <div class="mi-text"><h3>Preposition Snap</h3><p>Which case does the preposition force?</p></div>
+    </div>
+    <div class="mode-item" onclick="startNinja()">
+      <div class="mi-icon">🗡️</div>
+      <div class="mi-text"><h3>Survival</h3><p>Words fall — type before they drop</p></div>
+    </div>
+  </div>
+  <div class="home-grid" id="homeGrid"></div>
+</div>
+
+<div class="screen" id="lessonScreen">
+  <div class="hud">
+    <button class="hud-close" onclick="goHome()">✕</button>
+    <span class="hud-score" id="lessonCount"></span>
+    <div style="width:38px;"></div>
+  </div>
+  <div class="card-arena" id="lessonArena"></div>
+  <div class="options-strip" id="lessonNav"></div>
+</div>
+
+<div class="screen" id="drillScreen">
+  <div class="hud" id="drillHud"></div>
+  <div class="timer-track"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+  <div class="card-arena" id="drillArena"></div>
+  <div class="options-strip" id="drillOptions"></div>
+</div>
+
+<div class="screen" id="ninjaScreen">
+  <div class="hud" id="ninjaHud"></div>
+  <div class="ninja-arena" id="ninjaArena"></div>
+  <div class="ninja-input-wrap">
+    <input class="ninja-input" id="ninjaInput" placeholder="type the article..." autocomplete="off">
+  </div>
+</div>
+
+<div class="screen" id="resultsScreen"></div>
+
+<div class="toast" id="toast"></div>
+
+<button class="set-fab" onclick="toggleSet()">⚙️</button>
+<div class="set-panel" id="setPanel">
+  <div class="rp-title">Settings</div>
+  <div class="set-row">
+    <div><div class="set-label">🔊 German voice</div><div class="set-sub">Hear native pronunciation</div></div>
+    <div class="toggle" id="tgVoice" onclick="toggleSetting('voice')"></div>
+  </div>
+  <div class="set-row">
+    <div><div class="set-label">🗣️ Auto-speak words</div><div class="set-sub">Speak each card automatically</div></div>
+    <div class="toggle" id="tgAuto" onclick="toggleSetting('autoSpeak')"></div>
+  </div>
+  <div class="set-row">
+    <div><div class="set-label">🎵 Sound effects</div><div class="set-sub">Correct / wrong / streak tones</div></div>
+    <div class="toggle" id="tgSfx" onclick="toggleSetting('sfx')"></div>
+  </div>
+</div>
+
+<button class="ref-fab" onclick="toggleRef()">📋</button>
+<div class="ref-panel" id="refPanel">
+  <div class="rp-title">Definite Articles</div>
+  <div class="l-grid">
+    <div class="hdr"></div><div class="hdr">M</div><div class="hdr">F</div><div class="hdr">N</div><div class="hdr">Pl</div>
+    <div class="hdr">Nom</div><div>der</div><div>die</div><div>das</div><div>die</div>
+    <div class="hdr">Akk</div><div class="hl">den</div><div>die</div><div>das</div><div>die</div>
+    <div class="hdr">Dat</div><div class="hl">dem</div><div class="hl">der</div><div class="hl">dem</div><div class="hl">den</div>
+    <div class="hdr">Gen</div><div class="hl">des</div><div class="hl">der</div><div class="hl">des</div><div class="hl">der</div>
+  </div>
+  <div style="font-size:11px;color:var(--text-dim);margin-top:8px;line-height:1.6;">
+    <b>Akk:</b> durch, für, gegen, ohne, um<br>
+    <b>Dat:</b> aus, bei, mit, nach, seit, von, zu<br>
+    <b>Two-way:</b> in, an, auf, über, unter, vor, hinter, neben, zwischen
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  DATA
+// ============================================================
+const NOUNS = [
+  {de:'Mann',en:'man',g:'m'},{de:'Hund',en:'dog',g:'m'},{de:'Tisch',en:'table',g:'m'},{de:'Stuhl',en:'chair',g:'m'},
+  {de:'Baum',en:'tree',g:'m'},{de:'Tag',en:'day',g:'m'},{de:'Freund',en:'friend (m)',g:'m'},{de:'Arzt',en:'doctor',g:'m'},
+  {de:'Bruder',en:'brother',g:'m'},{de:'Vater',en:'father',g:'m'},{de:'Sohn',en:'son',g:'m'},{de:'Lehrer',en:'teacher (m)',g:'m'},
+  {de:'Schüler',en:'student (m)',g:'m'},{de:'Wagen',en:'car',g:'m'},{de:'Bus',en:'bus',g:'m'},{de:'Zug',en:'train',g:'m'},
+  {de:'Platz',en:'place',g:'m'},{de:'Berg',en:'mountain',g:'m'},{de:'Fluss',en:'river',g:'m'},{de:'Park',en:'park',g:'m'},
+  {de:'Markt',en:'market',g:'m'},{de:'Schlüssel',en:'key',g:'m'},{de:'Computer',en:'computer',g:'m'},{de:'Kuchen',en:'cake',g:'m'},
+  {de:'Kaffee',en:'coffee',g:'m'},{de:'Wein',en:'wine',g:'m'},{de:'Käse',en:'cheese',g:'m'},{de:'Schuh',en:'shoe',g:'m'},
+  {de:'Mantel',en:'coat',g:'m'},{de:'Brief',en:'letter',g:'m'},{de:'Film',en:'film',g:'m'},{de:'Monat',en:'month',g:'m'},
+  {de:'Morgen',en:'morning',g:'m'},{de:'Abend',en:'evening',g:'m'},
+  {de:'Frau',en:'woman',g:'f'},{de:'Katze',en:'cat',g:'f'},{de:'Blume',en:'flower',g:'f'},{de:'Stadt',en:'city',g:'f'},
+  {de:'Straße',en:'street',g:'f'},{de:'Schule',en:'school',g:'f'},{de:'Kirche',en:'church',g:'f'},{de:'Tür',en:'door',g:'f'},
+  {de:'Uhr',en:'clock',g:'f'},{de:'Nacht',en:'night',g:'f'},{de:'Freundin',en:'friend (f)',g:'f'},{de:'Mutter',en:'mother',g:'f'},
+  {de:'Schwester',en:'sister',g:'f'},{de:'Tochter',en:'daughter',g:'f'},{de:'Lehrerin',en:'teacher (f)',g:'f'},{de:'Küche',en:'kitchen',g:'f'},
+  {de:'Lampe',en:'lamp',g:'f'},{de:'Tasche',en:'bag',g:'f'},{de:'Zeitung',en:'newspaper',g:'f'},{de:'Musik',en:'music',g:'f'},
+  {de:'Universität',en:'university',g:'f'},{de:'Wohnung',en:'apartment',g:'f'},{de:'Familie',en:'family',g:'f'},{de:'Arbeit',en:'work',g:'f'},
+  {de:'Frage',en:'question',g:'f'},{de:'Antwort',en:'answer',g:'f'},{de:'Geschichte',en:'history',g:'f'},{de:'Brücke',en:'bridge',g:'f'},
+  {de:'Milch',en:'milk',g:'f'},{de:'Suppe',en:'soup',g:'f'},{de:'Zeit',en:'time',g:'f'},{de:'Woche',en:'week',g:'f'},
+  {de:'Farbe',en:'colour',g:'f'},{de:'Sprache',en:'language',g:'f'},
+  {de:'Kind',en:'child',g:'n'},{de:'Buch',en:'book',g:'n'},{de:'Haus',en:'house',g:'n'},{de:'Auto',en:'car',g:'n'},
+  {de:'Bier',en:'beer',g:'n'},{de:'Wasser',en:'water',g:'n'},{de:'Brot',en:'bread',g:'n'},{de:'Fenster',en:'window',g:'n'},
+  {de:'Mädchen',en:'girl',g:'n'},{de:'Zimmer',en:'room',g:'n'},{de:'Bett',en:'bed',g:'n'},{de:'Land',en:'country',g:'n'},
+  {de:'Meer',en:'sea',g:'n'},{de:'Tier',en:'animal',g:'n'},{de:'Spiel',en:'game',g:'n'},{de:'Geld',en:'money',g:'n'},
+  {de:'Telefon',en:'phone',g:'n'},{de:'Radio',en:'radio',g:'n'},{de:'Kino',en:'cinema',g:'n'},{de:'Restaurant',en:'restaurant',g:'n'},
+  {de:'Hotel',en:'hotel',g:'n'},{de:'Problem',en:'problem',g:'n'},{de:'Beispiel',en:'example',g:'n'},{de:'Geschenk',en:'gift',g:'n'},
+  {de:'Hemd',en:'shirt',g:'n'},{de:'Kleid',en:'dress',g:'n'},{de:'Obst',en:'fruit',g:'n'},{de:'Gemüse',en:'vegetables',g:'n'},
+  {de:'Foto',en:'photo',g:'n'},{de:'Büro',en:'office',g:'n'},{de:'Stück',en:'piece',g:'n'},{de:'Jahr',en:'year',g:'n'},
+];
+
+const CASES=['nom','akk','dat','gen'];
+const CN={nom:'Nominativ',akk:'Akkusativ',dat:'Dativ',gen:'Genitiv'};
+const GENDER_INFO={
+  m:{emoji:'🔨',label:'Masculine',world:'The Forge',cls:'m'},
+  f:{emoji:'🌊',label:'Feminine',world:'Garden River',cls:'f'},
+  n:{emoji:'🔬',label:'Neuter',world:'The Lab',cls:'n'},
+};
+
+const ART={
+  def:{nom:{m:'der',f:'die',n:'das'},akk:{m:'den',f:'die',n:'das'},dat:{m:'dem',f:'der',n:'dem'},gen:{m:'des',f:'der',n:'des'}},
+};
+
+const PREPS={akk:['durch','für','gegen','ohne','um'],dat:['aus','bei','mit','nach','seit','von','zu'],two:['in','an','auf','über','unter','vor','hinter','neben','zwischen']};
+
+// ============================================================
+//  LESSON SLIDES
+// ============================================================
+const SLIDES = [
+  {step:'1 / 14', title:'Three Worlds', html:`
+    <p>German has three genders: <span class="gender-tag m">der</span> <span class="gender-tag f">die</span> <span class="gender-tag n">das</span></p>
+    <p>No logic to it. But <b>mental images</b> make it stick.</p>
+    <div class="l-mnemonic"><div class="l-emoji">🔨🔥</div><b>Masculine = The Forge</b><br>A roaring blacksmith's forge. Everything hammered, sparking, powerful.<br><em>der Tisch?</em> Picture a table glowing red-hot on the anvil.</div>`},
+  {step:'2 / 14', title:'Three Worlds', html:`
+    <div class="l-mnemonic"><div class="l-emoji">🌊🌺</div><b>Feminine = The Garden River</b><br>A calm river lined with flowers. Objects drift downstream through blossoms.<br><em>die Lampe?</em> A lamp floating gently in the current.</div>
+    <div class="l-mnemonic"><div class="l-emoji">🔬✨</div><b>Neuter = The Lab</b><br>A glowing science lab. Objects float in zero gravity under glass.<br><em>das Buch?</em> A book hovering weightlessly, teal glow around it.</div>
+    <p style="font-size:16px;color:var(--text);"><b>Every new noun: 2 seconds, place it in its world.</b></p>`},
+  {step:'3 / 14', title:'Feminine Endings', html:`
+    <p>Predict gender <b>~80%</b> from the ending.</p>
+    <div style="font-size:22px;font-weight:900;color:var(--fem);text-align:center;margin:16px 0;line-height:1.6;">-ung · -heit · -keit<br>-schaft · -tion · -ie<br>-ik · -ei · -in</div>
+    <p style="font-size:16px;text-align:center;">These are almost always <b style="color:var(--fem);">die</b>.<br>"ung / heit / keit = she"</p>
+    <p style="text-align:center;"><em>die Zeitung · die Freiheit · die Musik</em></p>`},
+  {step:'4 / 14', title:'Neuter & Masculine Endings', html:`
+    <div style="font-size:20px;font-weight:900;color:var(--neut);text-align:center;margin:10px 0;line-height:1.6;">-chen · -lein · -ment<br>-um · -tum · -ma · -o</div>
+    <p style="text-align:center;">Almost always <b style="color:var(--neut);">das</b>. Diminutives = always neuter.<br><em>das Mädchen · das Museum · das Büro</em></p>
+    <div style="font-size:20px;font-weight:900;color:var(--mask);text-align:center;margin:14px 0 8px;line-height:1.6;">-er · -ling · -ismus<br>-or · -us · -ant · -ist</div>
+    <p style="text-align:center;">Lean <b style="color:var(--mask);">der</b>. "-er / -ling = he"<br><em>der Lehrer · der Optimismus · der Motor</em></p>`},
+  {step:'5 / 14', title:'Category Shortcuts', html:`
+    <div class="l-rule"><div class="l-endings" style="color:var(--mask)">Days, months, seasons → der</div><div class="l-tip">der Montag · der Januar · der Sommer</div></div>
+    <div class="l-rule"><div class="l-endings" style="color:var(--mask)">Car brands & alcohol → der</div><div class="l-tip">der BMW · der Wein · der Whisky</div></div>
+    <div class="l-rule"><div class="l-endings" style="color:var(--fem)">~90% ending in -e → die</div><div class="l-tip">die Lampe · die Blume · die Straße</div></div>
+    <div class="l-rule"><div class="l-endings" style="color:var(--neut)">Ge- prefix → das</div><div class="l-tip">das Gebäude · das Geschenk · das Gemüse</div></div>`},
+  {step:'6 / 14', title:'The Four Cases', html:`
+    <p style="font-size:16px;">In English "the" never changes. In German it changes by the noun's <b>job in the sentence</b>:</p>
+    <div class="l-rule"><div class="l-endings" style="color:var(--accent)">Nominativ — Subject</div><div class="l-tip">Who does it? <b>Der</b> Mann isst.</div></div>
+    <div class="l-rule"><div class="l-endings" style="color:var(--accent)">Akkusativ — Direct object</div><div class="l-tip">What gets acted on? Ich sehe <b>den</b> Mann.</div></div>
+    <div class="l-rule"><div class="l-endings" style="color:var(--accent)">Dativ — Indirect object</div><div class="l-tip">To/for whom? Ich gebe <b>dem</b> Mann ein Buch.</div></div>
+    <div class="l-rule"><div class="l-endings" style="color:var(--accent)">Genitiv — Possession</div><div class="l-tip">Whose? Das Buch <b>des</b> Mannes.</div></div>`},
+  {step:'7 / 14', title:'The Grid', html:`
+    <p style="font-size:16px;"><b>This 4x4 grid is your entire battle map:</b></p>
+    <div class="l-grid">
+      <div class="hdr"></div><div class="hdr">M</div><div class="hdr">F</div><div class="hdr">N</div><div class="hdr">Pl</div>
+      <div class="hdr">Nom</div><div>der</div><div>die</div><div>das</div><div>die</div>
+      <div class="hdr">Akk</div><div class="hl">den</div><div>die</div><div>das</div><div>die</div>
+      <div class="hdr">Dat</div><div class="hl">dem</div><div class="hl">der</div><div class="hl">dem</div><div class="hl">den</div>
+      <div class="hdr">Gen</div><div class="hl">des</div><div class="hl">der</div><div class="hl">des</div><div class="hl">der</div>
+    </div>
+    <div class="l-mnemonic"><div class="l-emoji">🎯</div><b>Focus on what changes:</b><br>• Nom→Akk: <b>only masc</b> changes (der→den)<br>• Dativ: dem/der/dem/den — "DEM = Dativ"<br>• Genitiv: des/der/des/der — "DES = possession"<br>• Fem+Plural: identical Nom+Akk, identical Dat+Gen</div>`},
+  {step:'8 / 14', title:'Akkusativ Preps', html:`
+    <p style="font-size:16px;">These <b>always</b> force Akkusativ:</p>
+    <div style="font-size:24px;font-weight:900;text-align:center;margin:14px 0;letter-spacing:2px;">durch · für · gegen · ohne · um</div>
+    <div class="l-mnemonic"><div class="l-emoji">🐕</div><b>DOGFU</b> — a dog doing karate <b>through</b> (durch) things, <b>for</b> (für) fun, <b>against</b> (gegen) walls, <b>without</b> (ohne) stopping, <b>around</b> (um) the room.</div>
+    <p><em>durch <b>den</b> Park</em> (m, Akk) · <em>für <b>die</b> Frau</em> (f, Akk)</p>`},
+  {step:'9 / 14', title:'Dativ Preps', html:`
+    <p style="font-size:16px;">These <b>always</b> force Dativ:</p>
+    <div style="font-size:24px;font-weight:900;text-align:center;margin:14px 0;letter-spacing:2px;">aus · bei · mit · nach · seit · von · zu</div>
+    <div class="l-mnemonic"><div class="l-emoji">🎬</div><b>Abe's Movie Night Since Von Zurich</b><br>Abe Lincoln at (bei) a cinema, with (mit) popcorn, after (nach) work, since (seit) arriving from (von) Zurich (zu).</div>
+    <p><em>mit <b>dem</b> Hund</em> (m, Dat) · <em>bei <b>der</b> Arbeit</em> (f, Dat)</p>`},
+  {step:'10 / 14', title:'Two-Way Preps', html:`
+    <p style="font-size:16px;"><b>Akkusativ (motion) or Dativ (location):</b></p>
+    <div style="font-size:17px;font-weight:700;text-align:center;margin:10px 0;">in · an · auf · über · unter · vor · hinter · neben · zwischen</div>
+    <div class="l-mnemonic"><div class="l-emoji">🚶→ vs ⬤</div><b>Going THERE → Akkusativ</b><br>Ich gehe <b>in den</b> Park (motion)<br><br><b>Already THERE → Dativ</b><br>Ich bin <b>im</b> (in dem) Park (location)</div>
+    <p style="font-size:16px;"><b>Ask: movement or standing still?</b></p>`},
+  {step:'11 / 14', title:'Possessives', html:`
+    <p style="font-size:16px;"><em>mein, dein, sein, ihr, unser, euer, ihr</em> — all decline like <b>ein</b>.</p>
+    <div class="l-mnemonic"><div class="l-emoji">🔑</div><b>Only 3 cells differ from der/die/das:</b><br>• Nom masc: der → mein (no ending)<br>• Nom neut: das → mein (no ending)<br>• Akk neut: das → mein (no ending)<br><br>Everything else: swap the stem.<br>dem → mei<b>nem</b>, den → mei<b>nen</b>, der → mei<b>ner</b>, des → mei<b>nes</b></div>`},
+  {step:'12 / 14', title:'Possessives in Action', html:`
+    <p style="font-size:17px;text-align:center;"><b>"With my friend (female)"</b></p>
+    <div class="l-mnemonic" style="font-size:16px;line-height:1.8;">mit → always Dativ<br>Freundin = feminine<br>feminine Dativ = meiner<br>→ <b style="font-size:22px;">mit meiner Freundin</b></div>
+    <p style="font-size:17px;text-align:center;margin-top:16px;"><b>"For my brother"</b></p>
+    <div class="l-mnemonic" style="font-size:16px;line-height:1.8;">für → always Akkusativ<br>Bruder = masculine<br>masculine Akk = meinen<br>→ <b style="font-size:22px;">für meinen Bruder</b></div>`},
+  {step:'13 / 14', title:'One More Example', html:`
+    <p style="font-size:17px;text-align:center;"><b>"The book of my son"</b></p>
+    <div class="l-mnemonic" style="font-size:16px;line-height:1.8;">Possession = Genitiv<br>Sohn = masculine<br>masculine Gen = meines<br>→ <b style="font-size:22px;">das Buch meines Sohnes</b></div>
+    <p style="font-size:16px;text-align:center;margin-top:16px;">The pattern is always the same:<br><b style="color:var(--accent);font-size:18px;">Preposition → Case → Gender → Article</b></p>`},
+  {step:'14 / 14', title:'Ready. Drill it.', html:`
+    <div style="text-align:center;font-size:40px;margin:12px 0;">🎯</div>
+    <p style="text-align:center;font-size:18px;color:var(--text);"><b>That's the whole system.</b></p>
+    <p style="text-align:center;font-size:15px;">A 4x4 grid + ~20 prepositions + the ein-pattern.<br>Now drill until it's reflex.</p>
+    <div class="l-mnemonic"><div class="l-emoji">📅</div><b>30-Day Plan:</b><br>Wk 1-2: Article Blitz daily (5 min)<br>Wk 2-3: Add Preposition Snap<br>Wk 3-4: Survival mode for speed<br>Watch your grid go green.</div>`},
+];
+
+// ============================================================
+//  STATE
+// ============================================================
+let state = loadState();
+function loadState() {
+  try { const s=JSON.parse(localStorage.getItem('fallmeister')); if(s&&s.version>=3) return {...freshState(),...s,version:4}; } catch(e){}
+  return freshState();
+}
+function freshState() {
+  return {
+    version:4, firstDay:new Date().toISOString().slice(0,10), bestStreak:0, sessions:[],
+    mastery:{nom:{m:{c:0,t:0},f:{c:0,t:0},n:{c:0,t:0}},akk:{m:{c:0,t:0},f:{c:0,t:0},n:{c:0,t:0}},dat:{m:{c:0,t:0},f:{c:0,t:0},n:{c:0,t:0}},gen:{m:{c:0,t:0},f:{c:0,t:0},n:{c:0,t:0}}},
+  };
+}
+function save() { localStorage.setItem('fallmeister',JSON.stringify(state)); }
+
+// ============================================================
+//  SETTINGS
+// ============================================================
+let settings = loadSettings();
+function loadSettings() {
+  try { const s=JSON.parse(localStorage.getItem('fallmeister-settings')); if(s) return s; } catch(e){}
+  return { voice:true, autoSpeak:true, sfx:true };
+}
+function saveSettings() { localStorage.setItem('fallmeister-settings',JSON.stringify(settings)); }
+function toggleSet() { document.getElementById('setPanel').classList.toggle('show'); }
+function toggleSetting(key) {
+  settings[key]=!settings[key]; saveSettings(); renderToggles();
+  if(key==='sfx'&&settings.sfx) sfx('correct');
+  if(key==='voice'&&settings.voice) audio.speak('Hallo');
+}
+function renderToggles() {
+  document.getElementById('tgVoice').className='toggle'+(settings.voice?' on':'');
+  document.getElementById('tgAuto').className='toggle'+(settings.autoSpeak?' on':'');
+  document.getElementById('tgSfx').className='toggle'+(settings.sfx?' on':'');
+}
+
+// ============================================================
+//  AUDIO — German voice (Web Speech) + SFX (Web Audio)
+// ============================================================
+const audio = {
+  deVoice:null,
+  init() {
+    if(!('speechSynthesis' in window)) return;
+    const pick=()=>{
+      const vs=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith('de'));
+      // Prefer a natural-sounding German voice
+      this.deVoice = vs.find(v=>/google/i.test(v.name)) || vs.find(v=>/natural|premium/i.test(v.name)) || vs[0] || null;
+    };
+    pick();
+    speechSynthesis.onvoiceschanged = pick;
+  },
+  speak(text) {
+    if(!settings.voice || !('speechSynthesis' in window)) return;
+    try {
+      speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(text);
+      u.lang='de-DE'; if(this.deVoice) u.voice=this.deVoice;
+      u.rate=0.92; u.pitch=1.0;
+      speechSynthesis.speak(u);
+    } catch(e){}
+  }
+};
+
+let actx=null;
+function sfx(type) {
+  if(!settings.sfx) return;
+  try {
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==='suspended') actx.resume();
+    const seq = {
+      correct:[[660,0,0.08],[880,0.07,0.14]],
+      wrong:[[200,0,0.18],[150,0.08,0.22]],
+      streak:[[523,0,0.07],[659,0.06,0.07],[784,0.12,0.14]],
+      win:[[523,0,0.1],[659,0.09,0.1],[784,0.18,0.1],[1046,0.27,0.22]],
+      tick:[[440,0,0.05]],
+    }[type]||[];
+    seq.forEach(([freq,delay,dur])=>{
+      const o=actx.createOscillator(), g=actx.createGain();
+      o.type='triangle'; o.frequency.value=freq;
+      o.connect(g); g.connect(actx.destination);
+      const t=actx.currentTime+delay;
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.18,t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      o.start(t); o.stop(t+dur+0.02);
+    });
+  } catch(e){}
+}
+
+// ============================================================
+//  MASCOT — cute SVG character "Fips"
+// ============================================================
+const GENDER_COLOR={m:'#7c6cf0',f:'#f472b6',n:'#22d3ee',a:'#a78bfa'};
+const GENDER_PROP={m:'🔨',f:'🌸',n:'⚗️',a:'✨'};
+function mascotSVG(g) {
+  const c=GENDER_COLOR[g]||GENDER_COLOR.a;
+  return `<svg viewBox="0 0 100 100" class="mascot-svg">
+    <ellipse cx="50" cy="56" rx="33" ry="35" fill="${c}"/>
+    <ellipse cx="50" cy="63" rx="21" ry="22" fill="rgba(255,255,255,0.16)"/>
+    <circle cx="29" cy="63" r="4.5" fill="rgba(255,255,255,0.30)"/>
+    <circle cx="71" cy="63" r="4.5" fill="rgba(255,255,255,0.30)"/>
+    <g class="m-face"></g>
+  </svg>`;
+}
+function faceMarkup(mood) {
+  if(mood==='happy'||mood==='celebrate') return `
+    <path d="M32 49 q7 -8 14 0" stroke="#15151f" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M54 49 q7 -8 14 0" stroke="#15151f" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M39 60 q11 15 22 0 q-11 6 -22 0" stroke="#15151f" stroke-width="3.5" fill="#15151f" stroke-linejoin="round"/>`;
+  if(mood==='sad') return `
+    <circle cx="39" cy="51" r="6" fill="#fff"/><circle cx="61" cy="51" r="6" fill="#fff"/>
+    <circle cx="39" cy="53" r="3" fill="#15151f"/><circle cx="61" cy="53" r="3" fill="#15151f"/>
+    <path d="M40 65 q10 -9 20 0" stroke="#15151f" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M33 56 q-1 5 1 8" stroke="#7cc7ff" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  return `<g class="eyes">
+    <circle cx="39" cy="50" r="6.5" fill="#fff"/><circle cx="61" cy="50" r="6.5" fill="#fff"/>
+    <circle cx="40" cy="51" r="3.2" fill="#15151f"/><circle cx="62" cy="51" r="3.2" fill="#15151f"/>
+    <circle cx="41.5" cy="49.5" r="1.2" fill="#fff"/><circle cx="63.5" cy="49.5" r="1.2" fill="#fff"/></g>
+    <path d="M43 61 q7 7 14 0" stroke="#15151f" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+}
+function renderMascot(el, g, mood, prop) {
+  if(!el) return;
+  el.className='mascot '+(mood==='happy'?'happy':mood==='sad'?'sad':mood==='celebrate'?'celebrate':'idle');
+  el.innerHTML=mascotSVG(g)+(prop?`<span class="m-prop">${GENDER_PROP[g]||GENDER_PROP.a}</span>`:'');
+  const face=el.querySelector('.m-face'); if(face) face.innerHTML=faceMarkup(mood);
+}
+function mascotReact(el, g, mood) {
+  if(!el) return;
+  renderMascot(el,g,mood,true);
+  if(mood==='happy'||mood==='sad'){
+    setTimeout(()=>{ if(el.isConnected) renderMascot(el,g,'idle',true); },700);
+  }
+}
+
+// ============================================================
+//  CONFETTI
+// ============================================================
+function confettiBurst(n=44) {
+  const cols=['#7c6cf0','#f472b6','#22d3ee','#fbbf24','#34d399'];
+  for(let i=0;i<n;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    p.style.left=Math.random()*100+'vw';
+    p.style.background=cols[Math.floor(Math.random()*cols.length)];
+    if(Math.random()<0.4) p.style.borderRadius='50%';
+    const dur=1.6+Math.random()*1.4;
+    p.style.animation=`confettiFall ${dur}s linear forwards`;
+    p.style.animationDelay=Math.random()*0.3+'s';
+    p.style.top=(-20-Math.random()*40)+'px';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),(dur+0.5)*1000);
+  }
+}
+
+// ============================================================
+//  NAV
+// ============================================================
+function show(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function goHome() { clearDrill(); show('homeScreen'); renderHomeGrid(); updateNav(); }
+function updateNav() {
+  const d=Math.max(1,Math.floor((new Date()-new Date(state.firstDay))/86400000)+1);
+  document.getElementById('dayCount').textContent=Math.min(d,30);
+  document.getElementById('bestStreak').textContent=state.bestStreak+' best';
+}
+function toggleRef() { document.getElementById('refPanel').classList.toggle('show'); }
+function toast(msg,type,dur=1200) {
+  const t=document.getElementById('toast'); t.className='toast '+type; t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+function renderHomeGrid() {
+  let h='<h4>Mastery</h4><div class="mini-grid">';
+  h+='<div class="mg-cell mg-label"></div><div class="mg-cell mg-label" style="color:var(--mask)">🔨 M</div><div class="mg-cell mg-label" style="color:var(--fem)">🌊 F</div><div class="mg-cell mg-label" style="color:var(--neut)">🔬 N</div>';
+  for(const c of CASES){
+    h+=`<div class="mg-cell mg-label">${CN[c].slice(0,3)}</div>`;
+    for(const g of['m','f','n']){
+      const m=state.mastery[c][g],rate=m.t===0?-1:m.c/m.t;
+      const lvl=rate<0?0:rate<0.4?1:rate<0.7?2:rate<0.9?3:4;
+      const gc=g==='m'?'var(--mask)':g==='f'?'var(--fem)':'var(--neut)';
+      h+=`<div class="mg-cell mg-${lvl}" ${lvl>0?'style="border-left:2px solid '+gc+'"':''}>${m.t===0?'—':Math.round(rate*100)+'%'}</div>`;
+    }
+  }
+  h+='</div>';
+  document.getElementById('homeGrid').innerHTML=h;
+}
+
+// ============================================================
+//  LESSONS
+// ============================================================
+let lessonIdx=0;
+function startLessonSwipe() { lessonIdx=0; show('lessonScreen'); renderLessonCard(); }
+function renderLessonCard() {
+  const s=SLIDES[lessonIdx];
+  document.getElementById('lessonCount').innerHTML=`<b style="font-size:18px;">${lessonIdx+1}</b> <span style="color:var(--text-dim)">/ ${SLIDES.length}</span>`;
+  const arena=document.getElementById('lessonArena');
+  let cards='';
+  for(let i=Math.min(lessonIdx+2,SLIDES.length-1);i>=lessonIdx;i--){
+    const sl=SLIDES[i]; const depth=i-lessonIdx;
+    const cls=depth===0?'slide-in':depth===1?'behind-1':'behind-2';
+    cards+=`<div class="card ${cls}" id="lcard${i}"><div class="lesson-card-content"><div class="lc-step">${sl.step}</div><h3>${sl.title}</h3>${sl.html}</div></div>`;
+  }
+  arena.innerHTML=`<div class="card-stack full">${cards}</div>`;
+  setupSwipe(document.getElementById('lcard'+lessonIdx), ()=>nextLesson(), ()=>prevLesson());
+  const isLast=lessonIdx===SLIDES.length-1;
+  document.getElementById('lessonNav').innerHTML=`
+    <button class="opt-pill" onclick="prevLesson()" style="max-width:140px;font-size:16px;" ${lessonIdx===0?'disabled style="opacity:0.3;max-width:140px;font-size:16px;"':''}>← Back</button>
+    <button class="opt-pill" onclick="${isLast?'goHome()':'nextLesson()'}" style="max-width:160px;font-size:16px;background:var(--accent);color:#fff;border-color:var(--accent);">${isLast?'Done ✓':'Next →'}</button>
+  `;
+}
+function nextLesson() { const c=document.getElementById('lcard'+lessonIdx); if(c)c.classList.add('fly-left'); if(lessonIdx<SLIDES.length-1){lessonIdx++;setTimeout(renderLessonCard,300);} else setTimeout(goHome,300); }
+function prevLesson() { if(lessonIdx>0){lessonIdx--;renderLessonCard();} }
+
+// ============================================================
+//  SWIPE
+// ============================================================
+function setupSwipe(el,onRight,onLeft) {
+  if(!el) return; let startX=0,dx=0,dragging=false;
+  const start=x=>{startX=x;dx=0;dragging=true;el.style.transition='none';};
+  const move=x=>{if(!dragging)return;dx=x-startX;el.style.transform=`translateX(${dx}px) rotate(${dx*0.05}deg)`;
+    const rl=el.querySelector('.swipe-label.right'),ll=el.querySelector('.swipe-label.wrong-label');
+    if(rl)rl.style.opacity=Math.min(1,Math.max(0,dx/80));if(ll)ll.style.opacity=Math.min(1,Math.max(0,-dx/80));};
+  const end=()=>{if(!dragging)return;dragging=false;el.style.transition='transform 0.3s ease';
+    if(dx>80)onRight&&onRight();else if(dx<-80)onLeft&&onLeft();else el.style.transform='';};
+  el.addEventListener('pointerdown',e=>{e.preventDefault();start(e.clientX);});
+  el.addEventListener('pointermove',e=>move(e.clientX));
+  el.addEventListener('pointerup',end);el.addEventListener('pointerleave',end);
+}
+
+// ============================================================
+//  DRILL
+// ============================================================
+let drill={};
+function clearDrill() { if(drill.timerInterval)clearInterval(drill.timerInterval); if(drill.keyHandler)document.removeEventListener('keydown',drill.keyHandler); drill={}; }
+
+function startDrill(type) {
+  clearDrill();
+  drill={type,score:0,total:0,streak:0,maxStreak:0,timeLeft:60,active:true};
+  show('drillScreen'); startTimer(); nextDrillCard();
+}
+function startTimer() {
+  drill.timerInterval=setInterval(()=>{
+    drill.timeLeft-=0.1; const f=document.getElementById('timerFill');
+    if(f)f.style.width=(drill.timeLeft/60)*100+'%';
+    if(drill.timeLeft<=0){clearInterval(drill.timerInterval);drill.active=false;showResults();}
+  },100);
+}
+function pickWeak() {
+  let worst=[],wr=1;
+  for(const c of CASES) for(const g of['m','f','n']){const m=state.mastery[c][g],rate=m.t===0?0.5:m.c/m.t;if(rate<wr){worst=[{c,g}];wr=rate;}else if(rate===wr)worst.push({c,g});}
+  if(Math.random()<0.6&&worst.length)return worst[Math.floor(Math.random()*worst.length)];
+  return{c:CASES[Math.floor(Math.random()*4)],g:['m','f','n'][Math.floor(Math.random()*3)]};
+}
+
+function genQ() {
+  if(drill.type==='preposition') return genPrepQ();
+  const s=pickWeak(),ns=NOUNS.filter(n=>n.g===s.g),noun=ns[Math.floor(Math.random()*ns.length)];
+  const correct=ART.def[s.c][s.g], gi=GENDER_INFO[s.g];
+  const tpl={
+    nom:[`___ ${noun.de} ist hier`,`Wo ist ___ ${noun.de}?`],
+    akk:[`Ich sehe ___ ${noun.de}`,`Er hat ___ ${noun.de}`],
+    dat:[`Ich helfe ___ ${noun.de}`,`mit ___ ${noun.de}`],
+    gen:[`trotz ___ ${noun.de}s`,`wegen ___ ${noun.de}s`],
+  };
+  const sent=tpl[s.c][Math.floor(Math.random()*tpl[s.c].length)];
+  const allA=[...new Set(CASES.flatMap(c=>['m','f','n'].map(g=>ART.def[c][g])))];
+  let opts=[correct]; while(opts.length<4){const a=allA[Math.floor(Math.random()*allA.length)];if(!opts.includes(a))opts.push(a);}opts.sort(()=>Math.random()-0.5);
+  // Build logic chain shown on card
+  const logic = `${gi.emoji} <b>${ART.def.nom[s.g]} ${noun.de}</b> → ${CN[s.c]} → <b>?</b>`;
+  const explain = `${gi.emoji} ${ART.def.nom[s.g]} ${noun.de} (${gi.label}) → ${CN[s.c]} = <b>${correct}</b>`;
+  return {noun,case:s.c,gender:s.g,correct,opts,sent,gi,logic,explain,hint:`${noun.en}`};
+}
+
+function genPrepQ() {
+  const all=[...PREPS.akk.map(p=>({p,c:'akk'})),...PREPS.dat.map(p=>({p,c:'dat'})),...PREPS.two.map(p=>({p,c:Math.random()<0.5?'akk':'dat',two:true}))];
+  const pr=all[Math.floor(Math.random()*all.length)];
+  const g=['m','f','n'][Math.floor(Math.random()*3)],ns=NOUNS.filter(n=>n.g===g),noun=ns[Math.floor(Math.random()*ns.length)];
+  const correct=ART.def[pr.c][g],sent=`${pr.p} ___ ${noun.de}`, gi=GENDER_INFO[g];
+  const mh=pr.two?(pr.c==='akk'?'→ motion':'⬤ static'):'';
+  const allA=[...new Set(CASES.flatMap(c=>['m','f','n'].map(gg=>ART.def[c][gg])))];
+  let opts=[correct]; while(opts.length<4){const a=allA[Math.floor(Math.random()*allA.length)];if(!opts.includes(a))opts.push(a);}opts.sort(()=>Math.random()-0.5);
+  const prepRule = pr.two ? `${pr.p} ${mh}` : `${pr.p} → always`;
+  const logic = `${gi.emoji} <b>${pr.p}</b> → ${CN[pr.c]} + ${gi.label} → <b>?</b>`;
+  const explain = `${pr.p} → ${CN[pr.c]} + ${gi.label} = <b>${correct}</b>`;
+  return {noun,case:pr.c,gender:g,correct,opts,sent,gi,logic,explain,hint:`${noun.en} ${mh}`};
+}
+
+function nextDrillCard() {
+  if(!drill.active) return;
+  const q=genQ(); drill.currentQ=q; drill.answered=false;
+
+  document.getElementById('drillHud').innerHTML=`
+    <button class="hud-close" onclick="endDrill()">✕</button>
+    <div class="hud-streak ${drill.streak>=3?'on-fire':''}">${drill.streak>=3?'🔥 ':''}<b>${drill.streak}</b></div>
+    <div class="hud-score"><b>${drill.score}</b> / ${drill.total}</div>
+  `;
+
+  const arena=document.getElementById('drillArena');
+  arena.innerHTML=`
+    <div class="card-stack">
+      <div class="card behind-2"></div>
+      <div class="card behind-1"></div>
+      <div class="card slide-in glow-${q.gender}" id="drillCard">
+        <div class="swipe-label right">✓</div>
+        <div class="swipe-label wrong-label">✗</div>
+        <div class="mascot idle" id="drillMascot" style="width:60px;height:60px;margin-bottom:4px;"></div>
+        <div class="c-gender-bar">
+          <span class="c-gender-label ${q.gi.cls}">${q.gi.emoji} ${q.gi.label}</span>
+        </div>
+        <div class="c-badge">${CN[q.case]}</div>
+        <div class="c-sentence">${q.sent.replace('___','<span class="c-blank">?</span>').replace(q.noun.de, '<span class="c-noun-'+q.gender+'">'+q.noun.de+'</span>')}</div>
+        <div class="c-speak-row">
+          <span class="c-hint">${q.hint}</span>
+          <button class="speaker-btn" id="drillSpeak" onclick="event.stopPropagation();speakNoun()">🔊</button>
+        </div>
+        <div class="c-logic">${q.logic}</div>
+      </div>
+    </div>
+  `;
+
+  renderMascot(document.getElementById('drillMascot'), q.gender, 'idle', false);
+  if(settings.autoSpeak) setTimeout(()=>audio.speak(q.noun.de),250);
+
+  document.getElementById('drillOptions').innerHTML=q.opts.map((o,i)=>`<button class="opt-pill" id="dopt${i}" onclick="answerDrill('${o}',${i})"><span class="pill-key">${i+1}</span>${o}</button>`).join('');
+
+  if(drill.keyHandler) document.removeEventListener('keydown',drill.keyHandler);
+  drill.keyHandler=e=>{const i=parseInt(e.key)-1;if(i>=0&&i<4&&!drill.answered)answerDrill(q.opts[i],i);};
+  document.addEventListener('keydown',drill.keyHandler);
+}
+function speakNoun() {
+  const q=drill.currentQ; if(!q) return;
+  const btn=document.getElementById('drillSpeak');
+  if(btn){btn.classList.add('pulsing');setTimeout(()=>btn.classList.remove('pulsing'),600);}
+  // force voice on for manual tap even if auto-speak off
+  const wasVoice=settings.voice; settings.voice=true; audio.speak(q.noun.de); settings.voice=wasVoice;
+}
+
+function answerDrill(answer,idx) {
+  if(!drill.active||drill.answered) return;
+  drill.answered=true;
+  const q=drill.currentQ, ok=answer===q.correct;
+  drill.total++;
+  if(ok){drill.score++;drill.streak++;if(drill.streak>drill.maxStreak)drill.maxStreak=drill.streak;if(drill.streak>state.bestStreak){state.bestStreak=drill.streak;save();}}
+  else drill.streak=0;
+  state.mastery[q.case][q.gender].t++; if(ok)state.mastery[q.case][q.gender].c++; save();
+
+  const card=document.getElementById('drillCard'), btn=document.getElementById('dopt'+idx);
+  const masc=document.getElementById('drillMascot');
+
+  if(ok){
+    btn.classList.add('correct');
+    const lDiv=card.querySelector('.c-logic');
+    if(lDiv) lDiv.innerHTML=q.explain;
+    mascotReact(masc,q.gender,'happy');
+    // streak milestone = bigger reward
+    if(drill.streak>0 && drill.streak%5===0){ sfx('streak'); confettiBurst(28); }
+    else sfx('correct');
+    // speak the full correct article+noun to drill pronunciation
+    audio.speak(q.correct+' '+q.noun.de);
+    card.classList.add('fly-right');
+    toast(`✓ ${q.gi.emoji} ${q.correct} ${q.noun.de}`,'correct',500);
+    setTimeout(nextDrillCard,400);
+  } else {
+    btn.classList.add('wrong');
+    q.opts.forEach((o,i)=>{if(o===q.correct)document.getElementById('dopt'+i).classList.add('correct');});
+    card.classList.add('shake');
+    mascotReact(masc,q.gender,'sad');
+    sfx('wrong');
+    const lDiv=card.querySelector('.c-logic');
+    if(lDiv){ lDiv.innerHTML=q.explain; lDiv.style.fontSize='15px'; lDiv.style.color='var(--text)'; }
+    const blank=card.querySelector('.c-blank');
+    if(blank){blank.textContent=q.correct;blank.style.borderColor='var(--correct)';blank.style.color='var(--correct)';}
+    // speak correct answer so they hear the right one
+    audio.speak(q.correct+' '+q.noun.de);
+    toast(`✗ ${q.gi.emoji} ${q.correct} — ${q.gi.label}`,'wrong',1500);
+    setTimeout(()=>{card.classList.add('fly-left');setTimeout(nextDrillCard,350);},1400);
+  }
+}
+
+function endDrill() { clearInterval(drill.timerInterval); drill.active=false; showResults(); }
+
+function showResults() {
+  const pct=drill.total>0?Math.round(drill.score/drill.total*100):0;
+  state.sessions.push({date:new Date().toISOString(),score:drill.score,total:drill.total,streak:drill.maxStreak}); save();
+  const win=pct>=80, mood=win?'celebrate':pct>=50?'happy':'sad', mg=win?'a':pct>=50?'a':'a';
+  let h=`<div class="result-card">
+    <div class="mascot ${win?'celebrate':'idle'} mascot-big" id="resultMascot"></div>
+    <h2>${pct>=80?'🔥 Stark!':pct>=50?'💪 Gut gemacht!':'📖 Weiter so!'}</h2>
+    <div class="r-score">${pct}%</div>
+    <div class="r-sub">${drill.score}/${drill.total} correct · streak ${drill.maxStreak}</div>
+    <div class="result-btns">
+      <button class="r-btn primary" onclick="startDrill(drill.type)">Again</button>
+      <button class="r-btn ghost" onclick="goHome()">Home</button>
+    </div>
+  </div>`;
+  h+='<div style="margin-top:24px;width:100%;max-width:420px;"><div class="mini-grid">';
+  h+='<div class="mg-cell mg-label"></div><div class="mg-cell mg-label" style="color:var(--mask)">🔨 M</div><div class="mg-cell mg-label" style="color:var(--fem)">🌊 F</div><div class="mg-cell mg-label" style="color:var(--neut)">🔬 N</div>';
+  for(const c of CASES){h+=`<div class="mg-cell mg-label">${CN[c].slice(0,3)}</div>`;for(const g of['m','f','n']){const m=state.mastery[c][g],r=m.t===0?-1:m.c/m.t,l=r<0?0:r<0.4?1:r<0.7?2:r<0.9?3:4;h+=`<div class="mg-cell mg-${l}">${m.t===0?'—':Math.round(r*100)+'%'}</div>`;}}
+  h+='</div></div>';
+  document.getElementById('resultsScreen').innerHTML=h; show('resultsScreen');
+  renderMascot(document.getElementById('resultMascot'),mg,mood,true);
+  if(win){ confettiBurst(60); sfx('win'); } else if(pct>=50){ sfx('streak'); }
+}
+
+// ============================================================
+//  NINJA
+// ============================================================
+let ninja={};
+function startNinja() {
+  clearDrill(); ninja={active:true,score:0,lives:3,words:[],wid:0,streak:0,maxStreak:0,combo:1};
+  show('ninjaScreen'); renderNinjaHud();
+  const inp=document.getElementById('ninjaInput');inp.value='';inp.focus();
+  inp.onkeydown=e=>{if(e.key==='Enter'){ninjaSubmit(inp.value.trim().toLowerCase());inp.value='';}};
+  ninjaSpawn(); ninja.fallInt=setInterval(ninjaFall,50);
+}
+function renderNinjaHud() {
+  document.getElementById('ninjaHud').innerHTML=`
+    <button class="hud-close" onclick="endNinja()">✕</button>
+    <div class="hud-streak ${ninja.streak>=3?'on-fire':''}">${ninja.streak>=3?'🔥 ':''}${ninja.combo>1?ninja.combo+'x ':''}${ninja.streak}</div>
+    <div class="hud-score">${'❤️'.repeat(ninja.lives)}${'🖤'.repeat(3-ninja.lives)} <b>${ninja.score}</b></div>`;
+}
+function ninjaSpawn() {
+  if(!ninja.active)return;
+  const s=pickWeak(),ns=NOUNS.filter(n=>n.g===s.g),noun=ns[Math.floor(Math.random()*ns.length)];
+  ninja.words.push({id:ninja.wid++,noun,case:s.c,gender:s.g,correct:ART.def[s.c][s.g],x:10+Math.random()*70,spawned:Date.now()});
+  setTimeout(ninjaSpawn,Math.max(800,2500-ninja.score*30));
+}
+function ninjaFall() {
+  if(!ninja.active)return;const arena=document.getElementById('ninjaArena');if(!arena)return;
+  const dur=Math.max(4000,10000-ninja.score*100),now=Date.now();let html='';const rm=[];
+  for(const w of ninja.words){const y=(now-w.spawned)/dur*100;
+    if(y>=95){rm.push(w.id);ninja.lives--;ninja.streak=0;ninja.combo=1;state.mastery[w.case][w.gender].t++;save();
+      if(ninja.lives<=0){ninja.active=false;clearInterval(ninja.fallInt);showNinjaResults();return;}renderNinjaHud();continue;}
+    const gi=GENDER_INFO[w.gender];
+    html+=`<div class="falling-word fw-${w.gender}" style="left:${w.x}%;top:${y}%"><span class="fw-case">${CN[w.case].slice(0,3)}</span>${gi.emoji} ${w.noun.de}</div>`;
+  }
+  ninja.words=ninja.words.filter(w=>!rm.includes(w.id));arena.innerHTML=html;
+}
+function ninjaSubmit(a) {
+  if(!ninja.active||!a)return;
+  const sorted=[...ninja.words].sort((a,b)=>(Date.now()-a.spawned)-(Date.now()-b.spawned)).reverse();
+  const match=sorted.find(w=>w.correct===a);const inp=document.getElementById('ninjaInput');
+  if(match){ninja.words=ninja.words.filter(w=>w.id!==match.id);ninja.score+=ninja.combo;ninja.streak++;
+    if(ninja.streak>ninja.maxStreak)ninja.maxStreak=ninja.streak;if(ninja.streak>state.bestStreak){state.bestStreak=ninja.streak;save();}
+    ninja.combo=1+Math.floor(ninja.streak/5);state.mastery[match.case][match.gender].t++;state.mastery[match.case][match.gender].c++;save();
+    inp.style.borderColor='var(--correct)';
+  }else{ninja.streak=0;ninja.combo=1;inp.style.borderColor='var(--wrong)';}
+  setTimeout(()=>{inp.style.borderColor='var(--border)';},200);renderNinjaHud();
+}
+function endNinja(){ninja.active=false;clearInterval(ninja.fallInt);showNinjaResults();}
+function showNinjaResults(){
+  state.sessions.push({date:new Date().toISOString(),score:ninja.score,streak:ninja.maxStreak,mode:'ninja'});save();
+  drill.type='ninja';
+  const win=ninja.score>=20, mood=win?'celebrate':ninja.score>=10?'happy':'sad';
+  document.getElementById('resultsScreen').innerHTML=`<div class="result-card">
+    <div class="mascot ${win?'celebrate':'idle'} mascot-big" id="resultMascot"></div>
+    <h2>${ninja.score>=20?'🗡️ Meister!':ninja.score>=10?'⚔️ Krieger!':'🛡️ Weiter so!'}</h2>
+    <div class="r-score">${ninja.score}</div>
+    <div class="r-sub">streak ${ninja.maxStreak} · combo ${ninja.combo}x</div>
+    <div class="result-btns"><button class="r-btn primary" onclick="startNinja()">Again</button><button class="r-btn ghost" onclick="goHome()">Home</button></div>
+  </div>`;
+  show('resultsScreen');
+  renderMascot(document.getElementById('resultMascot'),'a',mood,true);
+  if(win){ confettiBurst(60); sfx('win'); } else if(ninja.score>=10){ sfx('streak'); }
+}
+
+// ============================================================
+//  HOME EXTRAS — mascot greeting + daily goal ring
+// ============================================================
+function renderGoal() {
+  const today=new Date().toISOString().slice(0,10);
+  const todayAns = state.sessions.filter(s=>s.date&&s.date.slice(0,10)===today).reduce((a,s)=>a+(s.total||s.score||0),0);
+  const goal=40, pct=Math.min(1,todayAns/goal);
+  const r=23, circ=2*Math.PI*r, off=circ*(1-pct);
+  const done=pct>=1;
+  document.getElementById('goalWrap').innerHTML=`
+    <svg class="goal-ring" viewBox="0 0 54 54">
+      <circle cx="27" cy="27" r="${r}" fill="none" stroke="var(--surface3)" stroke-width="6"/>
+      <circle cx="27" cy="27" r="${r}" fill="none" stroke="${done?'var(--correct)':'var(--accent)'}" stroke-width="6"
+        stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${off}" transform="rotate(-90 27 27)"/>
+      <text x="27" y="32" text-anchor="middle" font-size="15" font-weight="800" fill="${done?'var(--correct)':'var(--text)'}">${done?'✓':Math.round(pct*100)+'%'}</text>
+    </svg>
+    <div class="goal-text">
+      <h5>${done?'Daily goal smashed! 🎉':'Daily goal'}</h5>
+      <p>${todayAns} / ${goal} reps today · 🔥 ${state.bestStreak} best streak</p>
+    </div>`;
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+audio.init();
+renderToggles();
+function bootHome(){ const hm=document.getElementById('homeMascot'); renderMascot(hm,'a','happy',true); setTimeout(()=>{if(hm&&hm.isConnected)renderMascot(hm,'a','idle',true);},650); renderGoal(); }
+const _goHome=goHome;
+goHome=function(){ _goHome(); bootHome(); };
+
+// INIT
+updateNav(); renderHomeGrid(); bootHome();
+// Resume audio context on first interaction (browser autoplay policy)
+document.addEventListener('pointerdown',()=>{ if(actx&&actx.state==='suspended')actx.resume(); },{once:true});
+</script>
+</body>
+</html>
