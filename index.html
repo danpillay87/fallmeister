@@ -144,14 +144,30 @@ body {
 }
 .card .c-logic b { color:var(--accent); }
 
-/* ---- WRONG-ANSWER FEEDBACK: rule + highlighted case table ---- */
-.fb-rule { font-size:13px; color:var(--text); font-weight:600; line-height:1.45; margin-bottom:8px; text-align:center; }
-.fb-rule b { color:var(--wrong); }
-.fb-grid { display:grid; grid-template-columns:46px repeat(3,1fr); gap:3px; max-width:300px; margin:0 auto; }
-.fb-grid > div { padding:5px 2px; text-align:center; border-radius:5px; background:var(--surface3); font-size:13px; font-weight:700; color:var(--text-mid); }
-.fb-grid .h { background:transparent; color:var(--text-dim); font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:.5px; }
-.fb-grid .rowhit, .fb-grid .colhit { color:var(--text); background:var(--surface2); box-shadow:inset 0 0 0 1px var(--border); }
-.fb-grid .hit { color:#fff; font-weight:900; animation:hitpulse 0.7s ease 3; }
+/* ---- WRONG-ANSWER FEEDBACK: hero picked→needed, rule, supporting strip ---- */
+.why-compare { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:10px; }
+.why-pill { display:flex; flex-direction:column; align-items:center; gap:1px; padding:8px 16px; border-radius:14px; min-width:74px; }
+.why-pill .wp-art { font-size:26px; font-weight:900; line-height:1.05; }
+.why-pill .wp-case { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; white-space:normal; max-width:104px; text-align:center; line-height:1.2; }
+.why-pill.wrong { background:rgba(248,113,113,.14); color:var(--wrong); }
+.why-pill.right { color:#fff; }
+.why-arrow { font-size:22px; color:var(--text-dim); font-weight:800; }
+.why-rule { font-size:13px; color:var(--text-mid); margin-bottom:11px; font-weight:500; line-height:1.4; }
+.why-rule b { color:var(--accent); font-weight:800; }
+.why-strip-label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:6px; font-weight:700; }
+.why-strip { display:flex; gap:6px; justify-content:center; }
+.why-chip { flex:1; max-width:66px; background:var(--surface3); border-radius:9px; padding:6px 2px 4px; display:flex; flex-direction:column; gap:1px; }
+.why-chip .wc-case { font-size:9px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-dim); font-weight:700; }
+.why-chip .wc-art { font-size:16px; font-weight:800; color:var(--text-mid); }
+.why-chip .wc-tag { font-size:8px; font-weight:800; text-transform:uppercase; letter-spacing:.3px; min-height:10px; }
+.why-chip.hit .wc-case { color:rgba(255,255,255,.9); }
+.why-chip.hit .wc-art { color:#fff; }
+.why-chip.hit .wc-tag { color:#fff; }
+.why-chip.hit { animation:hitpulse .7s ease 3; }
+.why-chip.picked { box-shadow:inset 0 0 0 2px var(--wrong); }
+.why-chip.picked .wc-tag { color:var(--wrong); }
+.why-continue { margin-top:12px; font-size:12px; color:var(--text-dim); font-weight:700; opacity:0; animation:fadeInHint .25s ease 0.5s forwards; }
+@keyframes fadeInHint { to { opacity:1; } }
 @keyframes hitpulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0)} 50%{box-shadow:0 0 0 4px rgba(255,255,255,.25)} }
 
 /* Reveal state (after wrong answer) */
@@ -869,6 +885,7 @@ function startDrill(type) {
 }
 function startTimer() {
   drill.timerInterval=setInterval(()=>{
+    if(drill.awaitingContinue) return; // pause the clock while reviewing a miss
     drill.timeLeft-=0.1; const f=document.getElementById('timerFill');
     if(f)f.style.width=(drill.timeLeft/60)*100+'%';
     if(drill.timeLeft<=0){clearInterval(drill.timerInterval);drill.active=false;showResults();}
@@ -881,21 +898,41 @@ function pickWeak() {
   return{c:CASES[Math.floor(Math.random()*4)],g:['m','f','n'][Math.floor(Math.random()*3)]};
 }
 
-// the full case×gender table, with the target cell lit up
-function miniGrid(c,g){
-  const GRID={nom:{m:'der',f:'die',n:'das'},akk:{m:'den',f:'die',n:'das'},dat:{m:'dem',f:'der',n:'dem'},gen:{m:'des',f:'der',n:'des'}};
-  const cols=['m','f','n'], colLabel={m:'M',f:'F',n:'N'};
-  const gc=g==='m'?'var(--mask)':g==='f'?'var(--fem)':'var(--neut)';
-  let h='<div class="fb-grid"><div class="h"></div>';
-  h+=cols.map(x=>`<div class="h ${x===g?'colhit':''}">${colLabel[x]}</div>`).join('');
-  for(const cc of CASES){
-    h+=`<div class="h ${cc===c?'rowhit':''}">${CN[cc].slice(0,3)}</div>`;
-    for(const x of cols){
-      const hit=cc===c&&x===g;
-      h+=`<div class="${hit?'hit':''}"${hit?` style="background:${gc}"`:''}>${GRID[cc][x]}</div>`;
-    }
+// short reusable pattern shown on article-mode misses
+const SHORT_RULE={
+  nom:'Nominativ = the plain subject article.',
+  akk:'Akkusativ only changes for <b>masculine</b> (der→den).',
+  dat:'Dativ → <b>dem</b> (m/n), <b>der</b> (f).',
+  gen:'Genitiv → <b>des</b> (m/n), <b>der</b> (f).'
+};
+// HERO: what you picked (and its case) → what you needed (and its case).
+// Then a one-line rule, then a supporting strip of this gender across the 4 cases.
+function whyFeedback(q, picked){
+  const g=q.gender, gc=g==='m'?'var(--mask)':g==='f'?'var(--fem)':'var(--neut)';
+  // what IS the article they picked? same gender (a case mix-up) or a different gender entirely?
+  const pickedCase=CASES.find(cc=>ART.def[cc][g]===picked); // same-gender case, if any
+  let pickedLabel;
+  if(pickedCase){ pickedLabel=CN[pickedCase]; }
+  else {
+    let id=null;
+    for(const og of ['m','f','n']){ for(const oc of CASES){ if(ART.def[oc][og]===picked){ id={og,oc}; break; } } if(id) break; }
+    pickedLabel = id ? `${GENDER_INFO[id.og].emoji} ${GENDER_INFO[id.og].label} ${CN[id.oc]}` : '—';
   }
-  return h+'</div>';
+  const wrongPill=`<div class="why-pill wrong"><span class="wp-art">${picked}</span><span class="wp-case">${pickedLabel}</span></div>`;
+  const rightPill=`<div class="why-pill right" style="background:${gc}"><span class="wp-art">${q.correct}</span><span class="wp-case">${CN[q.case]}</span></div>`;
+  const ruleLine = (drill.type==='preposition' && q.prepShort)
+    ? `<div class="why-rule">${q.prepShort} → so <b>${CN[q.case]}</b></div>`
+    : `<div class="why-rule">${SHORT_RULE[q.case]}</div>`;
+  const chips=CASES.map(cc=>{
+    const art=ART.def[cc][g], hit=cc===q.case, isPicked=cc===pickedCase && !hit;
+    const tag=hit?'needed':(isPicked?'you picked':'');
+    return `<div class="why-chip ${hit?'hit':''} ${isPicked?'picked':''}"${hit?` style="background:${gc}"`:''}><span class="wc-case">${CN[cc].slice(0,3)}</span><span class="wc-art">${art}</span><span class="wc-tag">${tag}</span></div>`;
+  }).join('');
+  return `<div class="why-compare">${wrongPill}<span class="why-arrow">→</span>${rightPill}</div>
+    ${ruleLine}
+    <div class="why-strip-label">${q.gi.emoji} ${q.gi.label} — article in each case</div>
+    <div class="why-strip">${chips}</div>
+    <div class="why-continue">tap or press any key to continue →</div>`;
 }
 const CASE_RULE={
   nom:'Nominativ = the subject — the article is its base form.',
@@ -934,11 +971,14 @@ function genPrepQ() {
   const prepRule = pr.two ? `${pr.p} ${mh}` : `${pr.p} → always`;
   const logic = `${gi.emoji} <b>${pr.p}</b> → ${CN[pr.c]} + ${gi.label} → <b>?</b>`;
   const explain = `${pr.p} → ${CN[pr.c]} + ${gi.label} = <b>${correct}</b>`;
-  let rule;
-  if(pr.two) rule = `“${pr.p}” is a two-way preposition: <b>motion → Akkusativ</b>, <b>location → Dativ</b>. Here it's ${pr.c==='akk'?'motion → Akkusativ':'location → Dativ'}, so ${gi.label} = <b>${correct}</b>.`;
-  else if(pr.c==='akk') rule = `“${pr.p}” <b>always</b> takes Akkusativ. ${gi.label} Akkusativ = <b>${correct}</b>.`;
-  else rule = `“${pr.p}” <b>always</b> takes Dativ. ${gi.label} Dativ = <b>${correct}</b>.`;
-  return {noun,case:pr.c,gender:g,correct,opts,sent,gi,logic,explain,rule,hint:`${noun.en} ${mh}`};
+  let rule, prepShort;
+  if(pr.two){ rule = `“${pr.p}” is a two-way preposition: <b>motion → Akkusativ</b>, <b>location → Dativ</b>. Here it's ${pr.c==='akk'?'motion → Akkusativ':'location → Dativ'}, so ${gi.label} = <b>${correct}</b>.`;
+    prepShort = `“${pr.p}” + ${pr.c==='akk'?'motion':'location'} → <b>${CN[pr.c]}</b>`; }
+  else if(pr.c==='akk'){ rule = `“${pr.p}” <b>always</b> takes Akkusativ. ${gi.label} Akkusativ = <b>${correct}</b>.`;
+    prepShort = `“${pr.p}” always takes <b>Akkusativ</b>`; }
+  else { rule = `“${pr.p}” <b>always</b> takes Dativ. ${gi.label} Dativ = <b>${correct}</b>.`;
+    prepShort = `“${pr.p}” always takes <b>Dativ</b>`; }
+  return {noun,case:pr.c,gender:g,correct,opts,sent,gi,logic,explain,rule,prepShort,hint:`${noun.en} ${mh}`};
 }
 
 function nextDrillCard() {
@@ -1022,16 +1062,24 @@ function answerDrill(answer,idx) {
     card.classList.add('shake');
     mascotReact(masc,q.gender,'sad');
     sfx('wrong');
-    // show WHY: the rule + the case table with the right cell lit up, to prompt recall
+    // show WHY: picked→needed + rule + strip; wait for a tap so it sinks in (clock pauses)
     const lDiv=card.querySelector('.c-logic');
-    if(lDiv){ lDiv.innerHTML=`<div class="fb-rule">${q.rule}</div>${miniGrid(q.case,q.gender)}`; lDiv.style.background='transparent'; lDiv.style.padding='2px 0'; }
+    if(lDiv){ lDiv.innerHTML=whyFeedback(q, answer); lDiv.style.background='transparent'; lDiv.style.padding='2px 0'; }
     const blank=card.querySelector('.c-blank');
     if(blank){blank.textContent=q.correct;blank.style.borderColor='var(--correct)';blank.style.color='var(--correct)';}
-    // speak correct answer so they hear the right one
     audio.speak(q.correct+' '+q.noun.de);
-    toast(`✗ It's ${q.correct} — ${q.gi.label} ${CN[q.case]}`,'wrong',2600);
-    // linger longer on a miss so the rule sinks in
-    setTimeout(()=>{card.classList.add('fly-left');setTimeout(nextDrillCard,350);},2600);
+    // pause the round clock; advance only when the learner taps / presses a key
+    drill.awaitingContinue=true;
+    const go=()=>{
+      if(!drill.awaitingContinue) return;
+      drill.awaitingContinue=false;
+      document.removeEventListener('keydown',keyGo);
+      card.style.cursor=''; card.onclick=null;
+      card.classList.add('fly-left'); setTimeout(nextDrillCard,350);
+    };
+    const keyGo=()=>go();
+    // small delay so the answering key/click doesn't instantly skip the feedback
+    setTimeout(()=>{ if(!drill.awaitingContinue) return; card.style.cursor='pointer'; card.onclick=go; document.addEventListener('keydown',keyGo); }, 450);
   }
 }
 
