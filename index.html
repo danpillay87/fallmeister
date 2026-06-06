@@ -871,6 +871,12 @@ function pickWeak() {
   return{c:CASES[Math.floor(Math.random()*4)],g:['m','f','n'][Math.floor(Math.random()*3)]};
 }
 
+const CASE_RULE={
+  nom:'Nominativ = the subject — the article is its base form.',
+  akk:'Akkusativ = direct object: <b>only masculine</b> changes (der→den); die/das stay the same.',
+  dat:'Dativ: masculine & neuter → <b>dem</b>, feminine → <b>der</b>, plural → <b>den</b>.',
+  gen:'Genitiv = possession: masculine & neuter → <b>des</b>, feminine & plural → <b>der</b>.'
+};
 function genQ() {
   if(drill.type==='preposition') return genPrepQ();
   const s=pickWeak(),ns=NOUNS.filter(n=>n.g===s.g),noun=ns[Math.floor(Math.random()*ns.length)];
@@ -887,7 +893,8 @@ function genQ() {
   // Build logic chain shown on card
   const logic = `${gi.emoji} <b>${ART.def.nom[s.g]} ${noun.de}</b> → ${CN[s.c]} → <b>?</b>`;
   const explain = `${gi.emoji} ${ART.def.nom[s.g]} ${noun.de} (${gi.label}) → ${CN[s.c]} = <b>${correct}</b>`;
-  return {noun,case:s.c,gender:s.g,correct,opts,sent,gi,logic,explain,hint:`${noun.en}`};
+  const rule = `${CASE_RULE[s.c]} So ${gi.label} ${CN[s.c]} = <b>${correct}</b>.`;
+  return {noun,case:s.c,gender:s.g,correct,opts,sent,gi,logic,explain,rule,hint:`${noun.en}`};
 }
 
 function genPrepQ() {
@@ -901,7 +908,11 @@ function genPrepQ() {
   const prepRule = pr.two ? `${pr.p} ${mh}` : `${pr.p} → always`;
   const logic = `${gi.emoji} <b>${pr.p}</b> → ${CN[pr.c]} + ${gi.label} → <b>?</b>`;
   const explain = `${pr.p} → ${CN[pr.c]} + ${gi.label} = <b>${correct}</b>`;
-  return {noun,case:pr.c,gender:g,correct,opts,sent,gi,logic,explain,hint:`${noun.en} ${mh}`};
+  let rule;
+  if(pr.two) rule = `“${pr.p}” is a two-way preposition: <b>motion → Akkusativ</b>, <b>location → Dativ</b>. Here it's ${pr.c==='akk'?'motion → Akkusativ':'location → Dativ'}, so ${gi.label} = <b>${correct}</b>.`;
+  else if(pr.c==='akk') rule = `“${pr.p}” <b>always</b> takes Akkusativ. ${gi.label} Akkusativ = <b>${correct}</b>.`;
+  else rule = `“${pr.p}” <b>always</b> takes Dativ. ${gi.label} Dativ = <b>${correct}</b>.`;
+  return {noun,case:pr.c,gender:g,correct,opts,sent,gi,logic,explain,rule,hint:`${noun.en} ${mh}`};
 }
 
 function nextDrillCard() {
@@ -985,14 +996,16 @@ function answerDrill(answer,idx) {
     card.classList.add('shake');
     mascotReact(masc,q.gender,'sad');
     sfx('wrong');
+    // show WHY: the rule you broke, in a sentence, to prompt recall
     const lDiv=card.querySelector('.c-logic');
-    if(lDiv){ lDiv.innerHTML=q.explain; lDiv.style.fontSize='15px'; lDiv.style.color='var(--text)'; }
+    if(lDiv){ lDiv.innerHTML=`<b style="color:var(--wrong)">Why?</b> ${q.rule}`; lDiv.style.fontSize='14px'; lDiv.style.lineHeight='1.5'; lDiv.style.color='var(--text)'; }
     const blank=card.querySelector('.c-blank');
     if(blank){blank.textContent=q.correct;blank.style.borderColor='var(--correct)';blank.style.color='var(--correct)';}
     // speak correct answer so they hear the right one
     audio.speak(q.correct+' '+q.noun.de);
-    toast(`✗ ${q.gi.emoji} ${q.correct} — ${q.gi.label}`,'wrong',1500);
-    setTimeout(()=>{card.classList.add('fly-left');setTimeout(nextDrillCard,350);},1400);
+    toast(`✗ It's ${q.correct} — ${q.gi.label} ${CN[q.case]}`,'wrong',2600);
+    // linger longer on a miss so the rule sinks in
+    setTimeout(()=>{card.classList.add('fly-left');setTimeout(nextDrillCard,350);},2600);
   }
 }
 
