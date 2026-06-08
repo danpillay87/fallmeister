@@ -1354,15 +1354,15 @@ const SPINES=[
 ];
 // One dog, one connected story — the trick for each case is part of his day.
 const HOOKCARDS=[
-  {id:'hk0', emoji:'🚪', big:'der', line:'out the DOOR — he’s DOING it'},
-  {id:'hk1', emoji:'🕳️', big:'den', line:'into his DEN — it happens to him'},
-  {id:'hk2', emoji:'🤲', big:'dem', line:'a bone to ’em — he GETS it'},
-  {id:'hk3', emoji:'🐾', big:'des', line:'the dog’sss — it’s HIS'},
+  {id:'hk0', emoji:'🏃', big:'de<u>r</u>', line:'ends in R → he RUNS (doing it)'},
+  {id:'hk1', emoji:'🕸️', big:'de<u>n</u>', line:'ends in N → caught in a NET (happens to him)'},
+  {id:'hk2', emoji:'🤲', big:'de<u>m</u>', line:'ends in M → to hiM / ’em (he gets it)'},
+  {id:'hk3', emoji:'🐾', big:'de<u>s</u>', line:'ends in S → the dog’S (it’s his)'},
 ];
 // an0-3 = the dog (masc), an4-7 = the cat (fem, the lazy one)
 const ANCHORS=[
-  {grp:'dog', de:'<b>der</b> Hund läuft', tag:'he’s doing it', en:'the dog runs (out the door)'},
-  {grp:'dog', de:'ich sehe <b>den</b> Hund', tag:'it happens to him', en:'I see the dog (in his den)'},
+  {grp:'dog', de:'<b>der</b> Hund läuft', tag:'he’s doing it', en:'the dog runs (R)'},
+  {grp:'dog', de:'ich sehe <b>den</b> Hund', tag:'it happens to him', en:'I see the dog (caught in a Net)'},
   {grp:'dog', de:'ich gebe <b>dem</b> Hund einen Knochen', tag:'he gets something', en:'I give the dog a bone'},
   {grp:'dog', de:'der Knochen <b>des</b> Hundes', tag:'it’s his', en:'the dog’s bone'},
   {grp:'cat', de:'<b>die</b> Katze schläft', tag:'she’s doing it', en:'the cat sleeps'},
@@ -1420,7 +1420,7 @@ function renderChant(){
         <select class="chant-sel" id="chantSleep" title="Auto-stop after…"><option value="0">No timer</option><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option></select>
       </div>
       <div class="lesson-audio">
-        <div class="la-label">🎧 The spoken lesson — clean studio voice, steady calm pace. One connected story: a dog out his DOOR (der), into his DEN (den), bone handed to ’em (dem), the dog’sss (des) — then a lazy cat (die/die/der/der) and the bossy-word chants. The music adapts — phone = chilled bed (sleepy ambient late at night), desktop = Ibiza work-flow by day; tap 🎵 to change. Hit ▶︎ Play above (the cards light in time) or use this bar.</div>
+        <div class="la-label">🎧 The spoken lesson — clean studio voice, steady calm pace. Keyed on the last letter: the dog R-uns (der), caught in a N-et (den), handed to hi-M (dem), the dog’-S (des) — then a lazy cat (die/die/der/der) and the bossy-word chants. The music adapts — phone = chilled bed (sleepy ambient late at night), desktop = Ibiza work-flow by day; tap 🎵 to change. Hit ▶︎ Play above (the cards light in time) or use this bar.</div>
         <audio controls preload="none" src="learn-voice.mp3" style="width:100%;margin-top:8px"></audio>
         <audio id="bedAudio" loop preload="none"></audio>
         <a class="chant-chip" href="learn-de.mp3" download="fallmeister-german-lesson.mp3" style="display:inline-block;margin-top:10px">⬇︎ Download (voice + jazz, offline)</a>
