@@ -1476,38 +1476,42 @@ function prepHTML(){
 // Code-generated cute dog (SVG). Reacts to the lesson cues: runs (der) · caught in a net (den)
 // · catches a bone (dem) · sits proud with his bone (des). Pure SVG+CSS, no deps, works offline.
 function dogSVG(){ return `
-<svg class="dog" viewBox="0 0 220 172" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <ellipse class="shadow" cx="110" cy="162" rx="46" ry="8"/>
-  <g class="prop speed"><line x1="2" y1="64" x2="40" y2="64"/><line x1="-2" y1="86" x2="36" y2="86"/><line x1="6" y1="108" x2="38" y2="108"/></g>
+<svg class="dog" viewBox="0 0 220 178" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <radialGradient id="furG" cx="40%" cy="30%" r="80%"><stop offset="0%" stop-color="#B98A55"/><stop offset="100%" stop-color="#8F6334"/></radialGradient>
+    <radialGradient id="muzG" cx="50%" cy="38%" r="70%"><stop offset="0%" stop-color="#E5C794"/><stop offset="100%" stop-color="#D2AE76"/></radialGradient>
+  </defs>
+  <ellipse class="shadow" cx="110" cy="170" rx="52" ry="8"/>
+  <g class="prop speed"><line x1="2" y1="62" x2="40" y2="62"/><line x1="-2" y1="86" x2="36" y2="86"/><line x1="6" y1="110" x2="38" y2="110"/></g>
   <g id="dog">
-    <path id="tail" d="M148 132 q26 -2 30 -24 q2 20 -26 18 z" fill="#E8C593"/>
-    <ellipse cx="110" cy="150" rx="34" ry="22" fill="#F4DDB8"/>
-    <rect class="paw" x="86" y="150" width="14" height="18" rx="7" fill="#F4DDB8"/><rect class="paw" x="120" y="150" width="14" height="18" rx="7" fill="#F4DDB8"/>
-    <g id="head">
-      <path class="ear" id="earL" d="M72 30 l20 30 l-34 9 z" fill="#E8C593"/>
-      <path class="ear" id="earR" d="M148 30 l-20 30 l34 9 z" fill="#E8C593"/>
-      <circle cx="110" cy="78" r="56" fill="#F4DDB8"/>
-      <circle cx="78" cy="100" r="9" fill="#F6AEB9" opacity=".85"/><circle cx="142" cy="100" r="9" fill="#F6AEB9" opacity=".85"/>
-      <g class="eyes">
-        <circle cx="87" cy="76" r="13" fill="#2c241c"/><circle cx="92" cy="71" r="5" fill="#fff"/><circle cx="83" cy="82" r="2.4" fill="#fff"/>
-        <circle cx="133" cy="76" r="13" fill="#2c241c"/><circle cx="138" cy="71" r="5" fill="#fff"/><circle cx="129" cy="82" r="2.4" fill="#fff"/>
-      </g>
-      <ellipse cx="110" cy="95" rx="7" ry="5.5" fill="#2c241c"/>
-      <path class="mouth" d="M110 100 q-8 9 -15 2 M110 100 q8 9 15 2" stroke="#2c241c" stroke-width="2.8" fill="none" stroke-linecap="round"/>
-      <path id="tongue" d="M104 103 q6 10 12 0 z" fill="#F08D8D"/>
+    <path id="tail" d="M152 120 q30 2 34 -24 q4 24 -30 20 z" fill="#7E5A33" stroke="#6e4a2a" stroke-width="2.5"/>
+    <ellipse cx="84" cy="160" rx="17" ry="11" fill="#7E5A33" stroke="#6e4a2a" stroke-width="2.5"/>
+    <ellipse cx="136" cy="160" rx="17" ry="11" fill="#7E5A33" stroke="#6e4a2a" stroke-width="2.5"/>
+    <ellipse cx="58" cy="116" rx="13" ry="21" transform="rotate(15 58 116)" fill="#9A6C3C" stroke="#6e4a2a" stroke-width="2.5"/>
+    <ellipse cx="162" cy="116" rx="13" ry="21" transform="rotate(-15 162 116)" fill="#9A6C3C" stroke="#6e4a2a" stroke-width="2.5"/>
+    <path class="ear" id="earL" d="M70 30 q-22 -10 -30 16 q18 8 32 -4 z" fill="#7E5A33" stroke="#6e4a2a" stroke-width="2.5"/>
+    <path class="ear" id="earR" d="M150 30 q22 -10 30 16 q-18 8 -32 -4 z" fill="#7E5A33" stroke="#6e4a2a" stroke-width="2.5"/>
+    <path d="M110 16 C151 16 161 52 161 82 C161 104 157 113 155 126 C153 152 139 162 110 162 C81 162 67 152 65 126 C63 113 59 104 59 82 C59 52 69 16 110 16 Z" fill="url(#furG)" stroke="#6e4a2a" stroke-width="3.5"/>
+    <ellipse cx="110" cy="110" rx="36" ry="29" fill="url(#muzG)"/>
+    <g class="eyes">
+      <ellipse cx="91" cy="78" rx="11" ry="12" fill="#fff" stroke="#6e4a2a" stroke-width="1.5"/><circle cx="93" cy="80" r="6.5" fill="#241a12"/><circle cx="95.5" cy="77" r="2.3" fill="#fff"/>
+      <ellipse cx="129" cy="78" rx="11" ry="12" fill="#fff" stroke="#6e4a2a" stroke-width="1.5"/><circle cx="127" cy="80" r="6.5" fill="#241a12"/><circle cx="129.5" cy="77" r="2.3" fill="#fff"/>
     </g>
+    <ellipse cx="110" cy="98" rx="14" ry="11" fill="#241a12"/><ellipse cx="106" cy="95" rx="4" ry="3" fill="#5a4632"/>
+    <path class="mouth" d="M110 109 q-15 16 -28 5 M110 109 q15 16 28 5" stroke="#241a12" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path id="tongue" d="M102 116 q8 13 16 0 z" fill="#F08D8D"/>
   </g>
-  <g class="prop net"><path d="M48 18 L172 150 M88 18 L172 110 M128 18 L172 70 M172 18 L48 150 M172 70 L88 150 M172 110 L128 150 M40 54 L150 164 M40 98 L108 164" stroke="#aab3c2" stroke-width="2" fill="none"/></g>
-  <g class="prop bone" transform="translate(110 130) rotate(8)">
-    <rect x="-17" y="-5" width="34" height="10" rx="5" fill="#F4ECDD" stroke="#cbb98f" stroke-width="1.5"/>
-    <circle cx="-17" cy="-6" r="5.5" fill="#F4ECDD" stroke="#cbb98f" stroke-width="1.5"/><circle cx="-17" cy="6" r="5.5" fill="#F4ECDD" stroke="#cbb98f" stroke-width="1.5"/>
-    <circle cx="17" cy="-6" r="5.5" fill="#F4ECDD" stroke="#cbb98f" stroke-width="1.5"/><circle cx="17" cy="6" r="5.5" fill="#F4ECDD" stroke="#cbb98f" stroke-width="1.5"/>
+  <g class="prop net"><path d="M48 16 L172 156 M88 16 L172 116 M128 16 L172 76 M172 16 L48 156 M172 76 L88 156 M172 116 L128 156 M40 54 L150 168 M40 100 L108 168" stroke="#aab3c2" stroke-width="2" fill="none"/></g>
+  <g class="prop bone" transform="translate(110 138) rotate(8)">
+    <rect x="-17" y="-5" width="34" height="10" rx="5" fill="#F7EFDD" stroke="#c9b487" stroke-width="1.5"/>
+    <circle cx="-17" cy="-6" r="5.5" fill="#F7EFDD" stroke="#c9b487" stroke-width="1.5"/><circle cx="-17" cy="6" r="5.5" fill="#F7EFDD" stroke="#c9b487" stroke-width="1.5"/>
+    <circle cx="17" cy="-6" r="5.5" fill="#F7EFDD" stroke="#c9b487" stroke-width="1.5"/><circle cx="17" cy="6" r="5.5" fill="#F7EFDD" stroke="#c9b487" stroke-width="1.5"/>
   </g>
-  <path class="prop heart" d="M110 24 q6 -10 16 -4 q10 7 -16 24 q-26 -17 -16 -24 q10 -6 16 4 z" fill="#F06D8D"/>
+  <path class="prop heart" d="M110 18 q6 -10 16 -4 q10 7 -16 24 q-26 -17 -16 -24 q10 -6 16 4 z" fill="#F0688D"/>
   <g class="prop sparkles" fill="#FFD466">
-    <path class="spk s1" d="M40 44 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 z"/>
-    <path class="spk s2" d="M182 54 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 l6 -2.5 z"/>
-    <path class="spk s3" d="M172 122 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 l6 -2.5 z"/>
+    <path class="spk s1" d="M38 44 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 z"/>
+    <path class="spk s2" d="M184 56 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 l6 -2.5 z"/>
+    <path class="spk s3" d="M174 126 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 l6 -2.5 z"/>
   </g>
 </svg>`; }
 function dogStageEl(){ return document.getElementById('dogStage'); }
