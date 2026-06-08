@@ -1303,7 +1303,8 @@ function renderChant(){
         <button class="chant-play" id="chantPlay" onclick="toggleChant()">▶︎ Play</button>
         ${m==='sleep'?`<button class="chant-chip ${chant.voiceWanted!==false?'on':''}" id="chantVoiceChip" onclick="toggleChantVoice()">🗣 Whisper</button>
           <button class="chant-chip ${chant.beatDrums!==false?'on':''}" id="chantBeatChip" onclick="toggleChantBeat()">🥁 Beat</button>
-          <select class="chant-sel" id="chantSleep"><option value="0">No timer</option><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option></select>`:''}
+          <select class="chant-sel" id="chantSleep"><option value="0">No timer</option><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option></select>
+          <a class="chant-chip" href="lofi.mp3" download="fallmeister-lofi.mp3" title="Download the lo-fi track for your phone / offline">⬇︎ MP3</a>`:''}
       </div>
     </div>`;
 }
