@@ -1414,6 +1414,18 @@ function renderChant(){
         <a class="chant-chip" href="learn-de.mp3" download="fallmeister-german-lesson.mp3" style="display:inline-block;margin-top:10px">⬇︎ Download lesson MP3</a>
       </div>
     </div>`;
+  // Streaming fallback: if progressive playback stalls (some browsers/CDNs choke
+  // on a large MP3 via range requests), fetch the file whole and play that instead.
+  const la=document.querySelector('.lesson-audio audio');
+  if(la){ la.addEventListener('play', ()=>{
+    setTimeout(async ()=>{
+      if(!la._blob && la.currentTime===0 && la.readyState<2){
+        try{ const r=await fetch(la.getAttribute('src'),{cache:'force-cache'}); const b=await r.blob();
+          la._blob=true; la.src=URL.createObjectURL(b); la.load(); await la.play();
+        }catch(e){}
+      }
+    }, 2500);
+  }); }
 }
 function toggleChantVoice(){ chant.voiceWanted = chant.voiceWanted===false; const c=document.getElementById('chantVoiceChip'); if(c) c.classList.toggle('on', chant.voiceWanted!==false); }
 function toggleChantBeat(){ chant.beatDrums = chant.beatDrums===false; const c=document.getElementById('chantBeatChip'); if(c) c.classList.toggle('on', chant.beatDrums!==false); }
