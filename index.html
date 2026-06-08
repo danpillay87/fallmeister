@@ -363,6 +363,34 @@ body {
 }
 .toggle.on::after { transform:translateX(20px); }
 
+/* ---- CHANT / IMMERSION ---- */
+#chantScreen { padding:8px 20px 24px; overflow-y:auto; }
+.chant-modes { display:flex; gap:8px; }
+.chant-mode-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); border-radius:99px; padding:8px 16px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; }
+.chant-mode-btn.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+.chant-body { max-width:440px; margin:0 auto; text-align:center; }
+.chant-sub { font-size:13px; color:var(--text-dim); margin:6px 0 16px; line-height:1.5; }
+.cgrid-head { display:grid; grid-template-columns:54px repeat(4,1fr); gap:5px; margin-bottom:5px; }
+.cgrid-head span { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); font-weight:700; text-align:center; }
+.crow { display:grid; grid-template-columns:54px repeat(4,1fr); gap:5px; margin-bottom:5px; border-radius:10px; transition:background 0.2s, transform 0.2s; padding:2px; }
+.crow .cr-lab { font-size:11px; font-weight:800; color:var(--text-dim); text-transform:uppercase; display:flex; align-items:center; justify-content:center; }
+.crow .cr-art { background:var(--surface2); border-radius:8px; padding:11px 2px; font-size:18px; font-weight:800; color:var(--text-mid); text-align:center; }
+.crow.lit { background:rgba(167,139,250,0.16); transform:scale(1.02); }
+.crow.lit .cr-lab { color:var(--accent); }
+.crow.lit .cr-art { background:var(--accent); color:#fff; }
+.chant-preps { margin-top:14px; display:flex; flex-direction:column; gap:7px; }
+.pblock { background:var(--surface2); border-radius:10px; padding:9px 12px; text-align:left; transition:background 0.2s, transform 0.2s; }
+.pblock .pb-lab { display:block; font-size:9.5px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-dim); font-weight:800; margin-bottom:2px; }
+.pblock .pb-list { font-size:15px; font-weight:700; color:var(--text-mid); }
+.pblock.lit { background:rgba(167,139,250,0.16); transform:scale(1.02); }
+.pblock.lit .pb-lab { color:var(--accent); }
+.pblock.lit .pb-list { color:var(--text); }
+.chant-now { margin-top:14px; min-height:24px; font-size:16px; font-weight:800; color:var(--accent); }
+.chant-controls { margin-top:14px; display:flex; gap:10px; align-items:center; justify-content:center; }
+.chant-play { background:var(--accent); color:#fff; border:none; border-radius:14px; padding:14px 34px; font-size:17px; font-weight:800; font-family:inherit; cursor:pointer; }
+.chant-play:hover { opacity:.92; }
+.chant-sel { background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:12px; padding:13px 14px; font-size:14px; font-family:inherit; font-weight:600; }
+
 /* ---- MASCOT ---- */
 .mascot { width:72px; height:72px; position:relative; flex-shrink:0; }
 .mascot-svg { width:100%; height:100%; display:block; overflow:visible; }
@@ -453,6 +481,10 @@ body {
       <div class="mi-icon">🗡️</div>
       <div class="mi-text"><h3>Survival</h3><p>Words fall — type before they drop</p></div>
     </div>
+    <div class="mode-item" onclick="startChant()">
+      <div class="mi-icon">🔁</div>
+      <div class="mi-text"><h3>Chant &amp; Immersion</h3><p>Listen on a loop — burn it into reflex</p></div>
+    </div>
   </div>
   <div class="home-grid" id="homeGrid"></div>
 </div>
@@ -481,6 +513,8 @@ body {
     <input class="ninja-input" id="ninjaInput" placeholder="type the article..." autocomplete="off">
   </div>
 </div>
+
+<div class="screen" id="chantScreen"></div>
 
 <div class="screen" id="resultsScreen"></div>
 
@@ -876,7 +910,7 @@ function setupSwipe(el,onRight,onLeft) {
 //  DRILL
 // ============================================================
 let drill={};
-function clearDrill() { if(drill.timerInterval)clearInterval(drill.timerInterval); if(drill.keyHandler)document.removeEventListener('keydown',drill.keyHandler); drill={}; }
+function clearDrill() { if(drill.timerInterval)clearInterval(drill.timerInterval); if(drill.keyHandler)document.removeEventListener('keydown',drill.keyHandler); drill={}; if(typeof stopChant==='function') stopChant(); }
 
 function startDrill(type) {
   clearDrill();
@@ -1200,6 +1234,142 @@ renderToggles();
 function bootHome(){ const hm=document.getElementById('homeMascot'); renderMascot(hm,'a','happy',true); setTimeout(()=>{if(hm&&hm.isConnected)renderMascot(hm,'a','idle',true);},650); renderGoal(); }
 const _goHome=goHome;
 goHome=function(){ _goHome(); bootHome(); };
+
+// ============================================================
+//  CHANT / IMMERSION — audible loop (active) + passive track (immersion)
+// ============================================================
+let chant={on:false, mode:'active', step:0, sleepUntil:0, timer:null};
+let chantAudio={ctx:null, osc:[], gain:null};
+
+function startChant(){ clearDrill(); chant.mode='active'; show('chantScreen'); renderChant(); }
+
+function chantGridHTML(){
+  const FULL={nom:['der','die','das','die'],akk:['den','die','das','die'],dat:['dem','der','dem','den'],gen:['des','der','des','der']};
+  const rows=[['Nom','nom'],['Akk','akk'],['Dat','dat'],['Gen','gen']];
+  let h='<div class="cgrid-head"><span></span><span>M</span><span>F</span><span>N</span><span>Pl</span></div>';
+  for(const [lab,k] of rows){ h+=`<div class="crow" id="crow-${k}"><span class="cr-lab">${lab}</span>`+FULL[k].map(a=>`<span class="cr-art">${a}</span>`).join('')+`</div>`; }
+  return h;
+}
+function chantPrepHTML(){
+  return `<div class="pblock" id="pb-akk"><span class="pb-lab">Akkusativ — always</span><span class="pb-list">durch · für · gegen · ohne · um</span></div>
+    <div class="pblock" id="pb-dat"><span class="pb-lab">Dativ — always</span><span class="pb-list">aus · bei · mit · nach · seit · von · zu</span></div>
+    <div class="pblock" id="pb-two"><span class="pb-lab">Two-way — Wohin?→Akk · Wo?→Dativ</span><span class="pb-list">in · an · auf · über · unter · vor · hinter · neben · zwischen</span></div>`;
+}
+function renderChant(){
+  const m=chant.mode;
+  document.getElementById('chantScreen').innerHTML=`
+    <div class="hud">
+      <button class="hud-close" onclick="stopChant();goHome()">✕</button>
+      <div class="chant-modes">
+        <button class="chant-mode-btn ${m==='active'?'on':''}" onclick="setChantMode('active')">🔁 Loop</button>
+        <button class="chant-mode-btn ${m==='immersion'?'on':''}" onclick="setChantMode('immersion')">🌙 Immersion</button>
+      </div>
+      <div style="width:38px"></div>
+    </div>
+    <div class="chant-body">
+      <div class="chant-sub">${m==='active'?'Chant along out loud — der, die, das… until it’s reflex.':'Put it on low — background or at lights-out. Let the patterns wash over you.'}</div>
+      <div class="chant-grid">${chantGridHTML()}</div>
+      <div class="chant-preps">${chantPrepHTML()}</div>
+      <div class="chant-now" id="chantNow">—</div>
+      <div class="chant-controls">
+        <button class="chant-play" id="chantPlay" onclick="toggleChant()">▶︎ Play</button>
+        ${m==='immersion'?`<select class="chant-sel" id="chantSleep"><option value="0">No timer</option><option value="10">Sleep 10m</option><option value="20" selected>Sleep 20m</option><option value="30">Sleep 30m</option></select>`:''}
+      </div>
+    </div>`;
+}
+function setChantMode(m){ stopChant(); chant.mode=m; renderChant(); }
+function toggleChant(){ chant.on ? stopChant() : playChant(); }
+
+function chantSteps(){
+  const imm=chant.mode==='immersion';
+  return [
+    {de:'der, die, das, die', hi:'nom', en: imm?'Nominative — the subject. The plain article.':null},
+    {de:'den, die, das, die', hi:'akk', en: imm?'Accusative — only the masculine changes. Der becomes den.':null},
+    {de:'dem, der, dem, den', hi:'dat', en: imm?'Dative — dem for masculine and neuter, der for feminine.':null},
+    {de:'des, der, des, der', hi:'gen', en: imm?'Genitive — possession. Des for masculine and neuter.':null},
+    {de:'durch, für, gegen, ohne, um', hi:'pakk', en: imm?'These always take the accusative.':null},
+    {de:'aus, bei, mit, nach, seit, von, zu', hi:'pdat', en: imm?'These always take the dative.':null},
+    {de:'in, an, auf, über, unter, vor, hinter, neben, zwischen', hi:'ptwo', en: imm?'Two-way. Moving takes accusative; resting takes dative.':null},
+  ];
+}
+function highlightChant(hi){
+  document.querySelectorAll('.crow, .pblock').forEach(e=>e.classList.remove('lit'));
+  const map={nom:'crow-nom',akk:'crow-akk',dat:'crow-dat',gen:'crow-gen',pakk:'pb-akk',pdat:'pb-dat',ptwo:'pb-two'};
+  if(map[hi]){ const el=document.getElementById(map[hi]); if(el) el.classList.add('lit'); }
+}
+function playChant(){
+  chant.on=true; chant.step=0;
+  const pb=document.getElementById('chantPlay'); if(pb) pb.textContent='⏸ Pause';
+  const sel=document.getElementById('chantSleep');
+  const mins=sel?(parseInt(sel.value)||0):0;
+  chant.sleepUntil = mins>0 ? Date.now()+mins*60000 : 0;
+  startPad(chant.mode);
+  speakChantStep();
+}
+function speakChantStep(){
+  if(!chant.on) return;
+  if(chant.sleepUntil && Date.now()>chant.sleepUntil){ stopChant(); return; }
+  const steps=chantSteps(), s=steps[chant.step % steps.length];
+  highlightChant(s.hi);
+  const now=document.getElementById('chantNow'); if(now) now.textContent=s.de;
+  if(chant.mode==='active') padTick();
+  const rate = chant.mode==='active'?1.0:0.8;
+  const seq=[{t:s.de,lang:'de-DE',rate}];
+  if(s.en) seq.push({t:s.en,lang:'en-GB',rate:0.92});
+  chantSpeakSeq(seq, ()=>{
+    if(!chant.on) return;
+    chant.step++;
+    const endOfCycle = chant.step % steps.length === 0;
+    const gap = chant.mode==='active' ? (endOfCycle?650:240) : (endOfCycle?2400:950);
+    chant.timer=setTimeout(speakChantStep, gap);
+  });
+}
+function chantSpeakSeq(items, done){
+  if(!('speechSynthesis' in window)){ chant.timer=setTimeout(done, 1200); return; }
+  try{ speechSynthesis.cancel(); }catch(e){}
+  let i=0;
+  const next=()=>{
+    if(!chant.on) return;
+    if(i>=items.length){ done&&done(); return; }
+    const it=items[i++];
+    const u=new SpeechSynthesisUtterance(it.t);
+    u.lang=it.lang; if(it.lang.startsWith('de')&&audio.deVoice) u.voice=audio.deVoice;
+    u.rate=it.rate||1; u.pitch=1;
+    u.onend=next; u.onerror=next;
+    try{ speechSynthesis.speak(u); }catch(e){ next(); }
+  };
+  next();
+}
+function startPad(mode){
+  try{
+    const ctx = actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state==='suspended') ctx.resume();
+    stopPad();
+    const g=ctx.createGain(); g.gain.value = mode==='immersion'?0.05:0; g.connect(ctx.destination); chantAudio.gain=g;
+    if(mode==='immersion'){
+      const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=520; lp.connect(g);
+      [98,98.6,147].forEach(f=>{ const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f; o.connect(lp); o.start(); chantAudio.osc.push(o); });
+    }
+    chantAudio.ctx=ctx;
+  }catch(e){}
+}
+function padTick(){
+  try{ const ctx=chantAudio.ctx; if(!ctx) return;
+    const o=ctx.createOscillator(), g=ctx.createGain(); o.type='triangle'; o.frequency.value=660; o.connect(g); g.connect(ctx.destination);
+    const t=ctx.currentTime; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.06,t+0.005); g.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
+    o.start(t); o.stop(t+0.11);
+  }catch(e){}
+}
+function stopPad(){ try{ chantAudio.osc.forEach(o=>{try{o.stop();}catch(e){}}); chantAudio.osc=[]; if(chantAudio.gain){ try{chantAudio.gain.disconnect();}catch(e){} chantAudio.gain=null; } }catch(e){} }
+function stopChant(){
+  chant.on=false;
+  try{ speechSynthesis.cancel(); }catch(e){}
+  if(chant.timer) clearTimeout(chant.timer);
+  stopPad();
+  const pb=document.getElementById('chantPlay'); if(pb) pb.textContent='▶︎ Play';
+  highlightChant(null);
+  const now=document.getElementById('chantNow'); if(now) now.textContent='—';
+}
 
 // INIT
 updateNav(); renderHomeGrid(); bootHome();
