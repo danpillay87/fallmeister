@@ -1348,30 +1348,41 @@ let chantAudio={ctx:null, osc:[], gain:null};
 function startChant(){ clearDrill(); chant.mode='active'; show('chantScreen'); renderChant(); }
 
 const SPINES=[
-  {emoji:'👦', cls:'sp-m', pre:'m', words:['der','den','dem','des']},
-  {emoji:'👧', cls:'sp-f', pre:'f', words:['die','die','der','der']},
+  {emoji:'🐕', cls:'sp-m', pre:'m', words:['der','den','dem','des']},
+  {emoji:'🐱', cls:'sp-f', pre:'f', words:['die','die','der','der']},
   {emoji:'👶', cls:'sp-n', pre:'n', words:['das','das','dem','des']},
 ];
+// One dog, one connected story — the trick for each case is part of his day.
 const HOOKCARDS=[
-  {id:'hk0', emoji:'🚪', big:'der', line:'the DOORMAN — he DOES it (doer)'},
-  {id:'hk1', emoji:'🦁', big:'den', line:'the lion’s DEN — dragged IN (done-to)'},
-  {id:'hk2', emoji:'🎁', big:'dem ≈ “them”', line:'GIVE it to them (give-to)'},
-  {id:'hk3', emoji:'🔑', big:'des ≈ “’s”', line:'the dog’S — it’s HIS'},
+  {id:'hk0', emoji:'🚪', big:'der', line:'out the DOOR — the DOER'},
+  {id:'hk1', emoji:'🕳️', big:'den', line:'into his DEN — done-to'},
+  {id:'hk2', emoji:'🤲', big:'dem', line:'hand the bone to ’em — give-to'},
+  {id:'hk3', emoji:'🐾', big:'des', line:'the dog’sss — it’s HIS'},
 ];
+// an0-3 = the dog (masc), an4-7 = the cat (fem, the lazy one)
 const ANCHORS=[
-  {de:'<b>der</b> Hund läuft', tag:'doer', en:'the dog runs'},
-  {de:'ich sehe <b>den</b> Hund', tag:'done-to', en:'I see the dog'},
-  {de:'ich gebe <b>dem</b> Hund einen Knochen', tag:'give-to', en:'I give the dog a bone'},
-  {de:'der Knochen <b>des</b> Hundes', tag:'his', en:'the dog’s bone'},
+  {grp:'dog', de:'<b>der</b> Hund läuft', tag:'doer', en:'the dog runs (out the door)'},
+  {grp:'dog', de:'ich sehe <b>den</b> Hund', tag:'done-to', en:'I see the dog (in his den)'},
+  {grp:'dog', de:'ich gebe <b>dem</b> Hund einen Knochen', tag:'give-to', en:'I give the dog a bone'},
+  {grp:'dog', de:'der Knochen <b>des</b> Hundes', tag:'his', en:'the dog’s bone'},
+  {grp:'cat', de:'<b>die</b> Katze schläft', tag:'doer', en:'the cat sleeps'},
+  {grp:'cat', de:'ich sehe <b>die</b> Katze', tag:'done-to', en:'I see the cat — still die!'},
+  {grp:'cat', de:'ich gebe <b>der</b> Katze Milch', tag:'give-to', en:'I give the cat milk — now der'},
+  {grp:'cat', de:'<b>die</b> Schüssel <b>der</b> Katze', tag:'hers', en:'the cat’s bowl'},
 ];
 function anchorsHTML(){
-  return `<div class="anchors-head">One dog · four sentences · one per job</div>`+
-    ANCHORS.map((a,i)=>`<div class="anchor" id="an${i}"><div class="an-de">${a.de}</div><div class="an-sub"><b>${a.tag}</b> · ${a.en}</div></div>`).join('');
+  const card=(a,i)=>`<div class="anchor" id="an${i}"><div class="an-de">${a.de}</div><div class="an-sub"><b>${a.tag}</b> · ${a.en}</div></div>`;
+  const dog=ANCHORS.map((a,i)=>[a,i]).filter(([a])=>a.grp==='dog');
+  const cat=ANCHORS.map((a,i)=>[a,i]).filter(([a])=>a.grp==='cat');
+  return `<div class="anchors-head">🐕 the dog (der) — one day, four jobs</div>`+
+    dog.map(([a,i])=>card(a,i)).join('')+
+    `<div class="anchors-head" style="margin-top:12px">🐱 the cat (die) — the lazy one</div>`+
+    cat.map(([a,i])=>card(a,i)).join('');
 }
 function spineHTML(){
   let h='<div class="spine-head"><span></span><span>Nom</span><span>Akk</span><span>Dat</span><span>Gen</span></div>';
   for(const s of SPINES){ h+=`<div class="spine ${s.cls}"><span class="sp-lab">${s.emoji}</span>`+s.words.map((w,i)=>`<span class="sp-w" id="${s.pre}${i}">${w}</span>`).join('')+`</div>`; }
-  h+=`<div class="spine-note"><b>Only boy-words (der) change all four.</b> Girl- & little-one words barely move.</div>`;
+  h+=`<div class="spine-note"><b>The dog (der) changes all four.</b> The cat (die) is lazy — only give-to & hers flip her to der.</div>`;
   return h;
 }
 function hooksHTML(){
@@ -1409,7 +1420,7 @@ function renderChant(){
         <select class="chant-sel" id="chantSleep" title="Auto-stop after…"><option value="0">No timer</option><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option></select>
       </div>
       <div class="lesson-audio">
-        <div class="la-label">🎧 The spoken lesson (4:39) — clean studio voice, steady calm pace: the four jobs, four German sentences, the memory tricks (doorman · lion’s den · “them” · the dog’s “sss”) and the bossy-word chants. The music adapts — on your phone a chilled bed (sleepy ambient late at night), on desktop an Ibiza work-flow groove by day; tap 🎵 to change it. Hit ▶︎ Play above (the cards light in time) or use this bar.</div>
+        <div class="la-label">🎧 The spoken lesson — clean studio voice, steady calm pace. One connected story: a dog out his DOOR (der), into his DEN (den), bone handed to ’em (dem), the dog’sss (des) — then a lazy cat (die/die/der/der) and the bossy-word chants. The music adapts — phone = chilled bed (sleepy ambient late at night), desktop = Ibiza work-flow by day; tap 🎵 to change. Hit ▶︎ Play above (the cards light in time) or use this bar.</div>
         <audio controls preload="none" src="learn-voice.mp3" style="width:100%;margin-top:8px"></audio>
         <audio id="bedAudio" loop preload="none"></audio>
         <a class="chant-chip" href="learn-de.mp3" download="fallmeister-german-lesson.mp3" style="display:inline-block;margin-top:10px">⬇︎ Download (voice + jazz, offline)</a>
