@@ -407,6 +407,10 @@ body {
 .hookcard .hk-line { font-size:10px; color:var(--text-dim); text-align:center; line-height:1.25; }
 .hookcard.lit { background:rgba(167,139,250,.2); transform:scale(1.06); }
 .hookcard.lit .hk-big { color:var(--accent); }
+.chant-chip { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); border-radius:99px; padding:13px 16px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; }
+.chant-chip.on { background:rgba(167,139,250,.18); border-color:var(--accent); color:var(--accent); }
+.chant-body.calm .spine-wrap, .chant-body.calm .hooks-row { opacity:0.5; transition:opacity .4s; }
+.chant-body.calm .spine .sp-w.lit, .chant-body.calm .hookcard.lit { opacity:1; }
 
 /* ---- MASCOT ---- */
 .mascot { width:72px; height:72px; position:relative; flex-shrink:0; }
@@ -1285,22 +1289,25 @@ function renderChant(){
     <div class="hud">
       <button class="hud-close" onclick="stopChant();goHome()">✕</button>
       <div class="chant-modes">
-        <button class="chant-mode-btn ${m==='active'?'on':''}" onclick="setChantMode('active')">🔁 Loop</button>
-        <button class="chant-mode-btn ${m==='immersion'?'on':''}" onclick="setChantMode('immersion')">🌙 Immersion</button>
+        <button class="chant-mode-btn ${m==='active'?'on':''}" onclick="setChantMode('active')">🔁 Practice</button>
+        <button class="chant-mode-btn ${m==='sleep'?'on':''}" onclick="setChantMode('sleep')">🌙 Sleep</button>
       </div>
       <div style="width:38px"></div>
     </div>
-    <div class="chant-body">
-      <div class="chant-sub">${m==='active'?'Sing the spines, grab the hooks — der·den·dem·des to a tune.':'Low and slow — the tune + the hooks (“dem = them”, “des = ’s”) sink in while you drift.'}</div>
+    <div class="chant-body ${m==='sleep'?'calm':''}">
+      <div class="chant-sub">${m==='active'?'Sing the spines, grab the hooks — der·den·dem·des to a tune.':'A calm bed of binaural beats — the rules whispered in over long silences. 🎧 Use headphones; set a timer and drift off.'}</div>
       <div class="spine-wrap">${spineHTML()}</div>
       <div class="hooks-row">${hooksHTML()}</div>
       <div class="chant-now" id="chantNow">—</div>
       <div class="chant-controls">
         <button class="chant-play" id="chantPlay" onclick="toggleChant()">▶︎ Play</button>
-        ${m==='immersion'?`<select class="chant-sel" id="chantSleep"><option value="0">No timer</option><option value="10">Sleep 10m</option><option value="20" selected>Sleep 20m</option><option value="30">Sleep 30m</option></select>`:''}
+        ${m==='sleep'?`<button class="chant-chip ${chant.voiceWanted!==false?'on':''}" id="chantVoiceChip" onclick="toggleChantVoice()">🗣 Whisper</button>
+          <select class="chant-sel" id="chantDepth"><option value="6" selected>Drift (θ 6Hz)</option><option value="3">Deep (δ 3Hz)</option><option value="10">Calm (α 10Hz)</option></select>
+          <select class="chant-sel" id="chantSleep"><option value="0">No timer</option><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option></select>`:''}
       </div>
     </div>`;
 }
+function toggleChantVoice(){ chant.voiceWanted = chant.voiceWanted===false; const c=document.getElementById('chantVoiceChip'); if(c) c.classList.toggle('on', chant.voiceWanted!==false); }
 function setChantMode(m){ stopChant(); chant.mode=m; renderChant(); }
 function toggleChant(){ chant.on ? stopChant() : playChant(); }
 
@@ -1308,9 +1315,9 @@ const NOTE={C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392.0,A4:440.0,C5:523.25}
 function playNote(freq,dur){ dur=dur||0.45;
   try{ const ctx=actx=actx||new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state==='suspended')ctx.resume();
     const o=ctx.createOscillator(), g=ctx.createGain(), lp=ctx.createBiquadFilter();
-    o.type='triangle'; o.frequency.value=freq; lp.type='lowpass'; lp.frequency.value=2200;
+    o.type='sine'; o.frequency.value=freq; lp.type='lowpass'; lp.frequency.value=1400;
     o.connect(lp); lp.connect(g); g.connect(ctx.destination);
-    const t=ctx.currentTime; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.14,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    const t=ctx.currentTime; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.09,t+0.03); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
     o.start(t); o.stop(t+dur+0.03);
   }catch(e){}
 }
@@ -1337,13 +1344,18 @@ function buildBeats(){
   return beats;
 }
 function playChant(){
-  chant.on=true; chant.bi=0; chant.beats=buildBeats();
+  chant.on=true; chant.bi=0;
   const pb=document.getElementById('chantPlay'); if(pb) pb.textContent='⏸ Pause';
   const sel=document.getElementById('chantSleep'); const mins=sel?(parseInt(sel.value)||0):0;
   chant.sleepUntil = mins>0 ? Date.now()+mins*60000 : 0;
   try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){}
-  startPad(chant.mode);
-  runBeat();
+  if(chant.mode==='sleep'){
+    const dsel=document.getElementById('chantDepth'); chant.beatHz = dsel?(parseFloat(dsel.value)||6):6;
+    startBed('sleep');
+    chant.timer=setTimeout(runSleep, 4000); // let the bed settle before the first whisper
+  } else {
+    chant.beats=buildBeats(); startBed('active'); runBeat();
+  }
 }
 function runBeat(){
   if(!chant.on) return;
@@ -1372,32 +1384,74 @@ function chantSpeakSeq(items, done){
   };
   next();
 }
-function startPad(mode){
+// ---- ambient bed: warm pad + (sleep) binaural beats, with fade-in ----
+function startBed(mode){
   try{
     const ctx = actx = actx || new (window.AudioContext||window.webkitAudioContext)();
     if(ctx.state==='suspended') ctx.resume();
-    stopPad();
-    const g=ctx.createGain(); g.gain.value = mode==='immersion'?0.05:0; g.connect(ctx.destination); chantAudio.gain=g;
-    if(mode==='immersion'){
-      const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=520; lp.connect(g);
-      [98,98.6,147].forEach(f=>{ const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f; o.connect(lp); o.start(); chantAudio.osc.push(o); });
-    }
-    chantAudio.ctx=ctx;
+    stopBed();
+    chantAudio.nodes=[];
+    const master=ctx.createGain(); master.gain.value=0.0001; master.connect(ctx.destination); chantAudio.master=master; chantAudio.ctx=ctx;
+    if(mode!=='sleep'){ master.gain.value=0.0001; return; } // practice mode: notes play directly, no bed
+    // warm pad (root + fifth + octave) through a soft lowpass
+    const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=440; lp.connect(master);
+    const padG=ctx.createGain(); padG.gain.value=0.5; padG.connect(lp);
+    [110,164.81,220].forEach(f=>{ const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f; o.connect(padG); o.start(); chantAudio.nodes.push(o); });
+    // slow breathing swell
+    const lfo=ctx.createOscillator(); lfo.type='sine'; lfo.frequency.value=0.07; const lfoG=ctx.createGain(); lfoG.gain.value=0.22; lfo.connect(lfoG); lfoG.connect(padG.gain); lfo.start(); chantAudio.nodes.push(lfo);
+    // binaural beat — carrier split L/R by beatHz (needs headphones)
+    const beatHz=chant.beatHz||6, carrier=174;
+    const bg=ctx.createGain(); bg.gain.value=0.16; bg.connect(master);
+    [[carrier,-1],[carrier+beatHz,1]].forEach(([f,pan])=>{
+      const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f; o.start(); chantAudio.nodes.push(o);
+      if(ctx.createStereoPanner){ const p=ctx.createStereoPanner(); p.pan.value=pan; o.connect(p); p.connect(bg); }
+      else { const m=ctx.createChannelMerger(2); o.connect(m, 0, pan<0?0:1); m.connect(bg); }
+    });
+    master.gain.exponentialRampToValueAtTime(0.5, ctx.currentTime+4); // gentle fade-in
   }catch(e){}
 }
-function padTick(){
-  try{ const ctx=chantAudio.ctx; if(!ctx) return;
-    const o=ctx.createOscillator(), g=ctx.createGain(); o.type='triangle'; o.frequency.value=660; o.connect(g); g.connect(ctx.destination);
-    const t=ctx.currentTime; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.06,t+0.005); g.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
-    o.start(t); o.stop(t+0.11);
+function stopBed(){
+  try{
+    (chantAudio.nodes||[]).forEach(n=>{ try{n.stop&&n.stop();}catch(e){} try{n.disconnect&&n.disconnect();}catch(e){} });
+    chantAudio.nodes=[];
+    if(chantAudio.gain){ try{chantAudio.gain.disconnect();}catch(e){} chantAudio.gain=null; }
+    if(chantAudio.master){ try{chantAudio.master.disconnect();}catch(e){} chantAudio.master=null; }
   }catch(e){}
 }
-function stopPad(){ try{ chantAudio.osc.forEach(o=>{try{o.stop();}catch(e){}}); chantAudio.osc=[]; if(chantAudio.gain){ try{chantAudio.gain.disconnect();}catch(e){} chantAudio.gain=null; } }catch(e){} }
+// sleep whispers: cycle the spines + sound-bridge hooks, slow & low, over long silences
+const SLEEP_LINES=[
+  {t:'der, den, dem, des', lang:'de-DE', hi:['m0','m1','m2','m3']},
+  {t:'dem… like “them”. The dative.', lang:'en-GB', hi:['m2']},
+  {t:'die, die, der, der', lang:'de-DE', hi:['f0','f1','f2','f3']},
+  {t:'des… like apostrophe S. The genitive.', lang:'en-GB', hi:['n3']},
+  {t:'das, das, dem, des', lang:'de-DE', hi:['n0','n1','n2','n3']},
+  {t:'den… only the man changes. The accusative.', lang:'en-GB', hi:['m1']},
+];
+function runSleep(){
+  if(!chant.on) return;
+  const remain = chant.sleepUntil ? chant.sleepUntil - Date.now() : Infinity;
+  if(chant.sleepUntil && remain<=0){ stopChant(); return; }
+  // fade the bed out over the final 30s
+  if(chant.sleepUntil && remain<30000 && chantAudio.master && chantAudio.ctx){
+    try{ chantAudio.master.gain.cancelScheduledValues(chantAudio.ctx.currentTime); chantAudio.master.gain.exponentialRampToValueAtTime(0.0001, chantAudio.ctx.currentTime + Math.max(1,remain/1000)); }catch(e){}
+  }
+  if(chant.voiceWanted!==false){
+    const it=SLEEP_LINES[chant.bi % SLEEP_LINES.length]; chant.bi++;
+    clearLit(); (it.hi||[]).forEach(id=>{const e=document.getElementById(id); if(e)e.classList.add('lit');});
+    const now=document.getElementById('chantNow'); if(now) now.textContent=it.t;
+    softSpeak(it.t, it.lang);
+  } else { clearLit(); }
+  chant.timer=setTimeout(runSleep, 15000); // long, restful gaps
+}
+function softSpeak(text, lang){
+  if(!('speechSynthesis' in window)) return;
+  try{ const u=new SpeechSynthesisUtterance(text); u.lang=lang||'de-DE'; if((lang||'').startsWith('de')&&audio.deVoice) u.voice=audio.deVoice; u.rate=0.72; u.pitch=0.85; u.volume=0.55; speechSynthesis.speak(u); }catch(e){}
+}
 function stopChant(){
   chant.on=false;
   try{ speechSynthesis.cancel(); }catch(e){}
   if(chant.timer) clearTimeout(chant.timer);
-  stopPad();
+  stopBed();
   const pb=document.getElementById('chantPlay'); if(pb) pb.textContent='▶︎ Play';
   if(typeof clearLit==='function') clearLit();
   const now=document.getElementById('chantNow'); if(now) now.textContent='—';
