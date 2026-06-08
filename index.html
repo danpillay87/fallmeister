@@ -414,6 +414,9 @@ body {
 .preprow.lit { background:rgba(167,139,250,.18); transform:scale(1.02); }
 .preprow.lit .pp-lab { color:var(--accent); }
 .preprow.lit .pp-list { color:var(--text); }
+.lesson-audio { margin:18px auto 0; max-width:440px; background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:14px; }
+.lesson-audio .la-label { font-size:12.5px; color:var(--text-mid); line-height:1.5; }
+.lesson-audio audio { filter:invert(0.92) hue-rotate(180deg); border-radius:8px; }
 .chant-chip { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); border-radius:99px; padding:13px 16px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; }
 .chant-chip.on { background:rgba(167,139,250,.18); border-color:var(--accent); color:var(--accent); }
 .chant-body.calm .spine-wrap, .chant-body.calm .hooks-row { opacity:0.5; transition:opacity .4s; }
@@ -1340,7 +1343,7 @@ const SPINES=[
   {emoji:'👶', cls:'sp-n', pre:'n', words:['das','das','dem','des']},
 ];
 const HOOKCARDS=[
-  {id:'hk0', emoji:'🥊', big:'der → den', line:'when it’s done TO him'},
+  {id:'hk0', emoji:'👀', big:'der → den', line:'when it’s done TO him'},
   {id:'hk1', emoji:'🎁', big:'dem ≈ “them”', line:'when you GIVE it to him'},
   {id:'hk2', emoji:'🔑', big:'des ≈ “’s”', line:'when it’s HIS'},
 ];
@@ -1383,7 +1386,12 @@ function renderChant(){
         ${m==='sleep'?`<button class="chant-chip ${chant.voiceWanted!==false?'on':''}" id="chantVoiceChip" onclick="toggleChantVoice()">🗣 Whisper</button>
           <button class="chant-chip ${chant.beatDrums!==false?'on':''}" id="chantBeatChip" onclick="toggleChantBeat()">🥁 Beat</button>
           <select class="chant-sel" id="chantSleep"><option value="0">No timer</option><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option></select>
-          <a class="chant-chip" href="lofi.mp3" download="fallmeister-lofi.mp3" title="Download the lo-fi track for your phone / offline">⬇︎ MP3</a>`:''}
+          <a class="chant-chip" href="lofi.mp3" download="fallmeister-lofi.mp3" title="Download the lo-fi bed (music only)">⬇︎ Bed</a>`:''}
+      </div>
+      <div class="lesson-audio">
+        <div class="la-label">🎧 The spoken lesson (2:25) — a real German voice walks you through it, with “your turn” gaps. Play here, or grab the file for your phone.</div>
+        <audio controls preload="none" src="learn-de.mp3" style="width:100%;margin-top:8px"></audio>
+        <a class="chant-chip" href="learn-de.mp3" download="fallmeister-german-lesson.mp3" style="display:inline-block;margin-top:10px">⬇︎ Download lesson MP3</a>
       </div>
     </div>`;
 }
@@ -1425,7 +1433,8 @@ const TEACHING=[
   {en:"Easy trick: des sounds like ‘the dog's’, with an s on the end. His thing — des!", hi:['m3','hk2']},
   {en:"So our one little dog showed all four. Doer: der. Done-to: den. Give-to: dem. His: des.", hi:['m0','m1','m2','m3'], now:"der · den · dem · des"},
   {de:"der, den, dem, des.", hi:['m0','m1','m2','m3']},
-  {en:"Good news! Only boy-words like ‘dog’ do all that changing. Girl-words are lazy — ‘the’ just goes die, die, der, der.", hi:['f0','f1','f2','f3'], now:"girl-words: die die der der"},
+  {en:"You might wonder — how do I know if a word is a boy-word or a girl-word? Mostly you just learn each one, like a friend's name. Our dog is a boy-word — so master him first, the rest comes later.", now:"which family? — you learn each word"},
+  {en:"Good news — only boy-words like dog do all that changing. Girl-words are lazy: ‘the’ just goes die, die, der, der. And yes, der pops up again here — same little word, different job. German's sneaky!", hi:['f0','f1','f2','f3'], now:"girl-words: die die der der"},
   {de:"die, die, der, der.", hi:['f0','f1','f2','f3']},
   {en:"And little-one words: das, das, dem, des.", hi:['n0','n1','n2','n3'], now:"little-one words: das das dem des"},
   {de:"das, das, dem, des.", hi:['n0','n1','n2','n3']},
@@ -1435,6 +1444,7 @@ const TEACHING=[
   {de:"aus, bei, mit, nach, seit, von, zu.", hi:['pp-dat']},
   {en:"And a few depend on moving. Moving to it? Use the done-to word. Sitting still there? Use the give-to word.", hi:['pp-two'], now:"moving → done-to · staying → give-to"},
   {de:"in, an, auf, über, unter, vor, hinter, neben, zwischen.", hi:['pp-two']},
+  {en:"Don't worry about memorising those lists tonight — the bossy words just decide for you. The big win is the dog and his four jobs.", now:"relax — the dog is the big win"},
   {en:"That's everything! Four jobs, and ‘the’ changes to show which one. One little dog showed you the lot.", now:"the dog showed you it all 🐕"},
   {en:"Oh — and if a grown-up uses the big words: nominative is doer, accusative is done-to, dative is give-to, genitive is his. Same thing. Let's go again.", now:"the grown-up names, just so you know"},
 ];
