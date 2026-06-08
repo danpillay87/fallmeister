@@ -1295,19 +1295,20 @@ function renderChant(){
       <div style="width:38px"></div>
     </div>
     <div class="chant-body ${m==='sleep'?'calm':''}">
-      <div class="chant-sub">${m==='active'?'Sing the spines, grab the hooks — der·den·dem·des to a tune.':'A calm bed of binaural beats — the rules whispered in over long silences. 🎧 Use headphones; set a timer and drift off.'}</div>
+      <div class="chant-sub">${m==='active'?'Sing the spines, grab the hooks — der·den·dem·des to a tune.':'A warm lo-fi bed — soft chords, a slow beat, vinyl crackle. Whisper the rules in, set a timer, and drift off.'}</div>
       <div class="spine-wrap">${spineHTML()}</div>
       <div class="hooks-row">${hooksHTML()}</div>
       <div class="chant-now" id="chantNow">—</div>
       <div class="chant-controls">
         <button class="chant-play" id="chantPlay" onclick="toggleChant()">▶︎ Play</button>
         ${m==='sleep'?`<button class="chant-chip ${chant.voiceWanted!==false?'on':''}" id="chantVoiceChip" onclick="toggleChantVoice()">🗣 Whisper</button>
-          <select class="chant-sel" id="chantDepth"><option value="6" selected>Drift (θ 6Hz)</option><option value="3">Deep (δ 3Hz)</option><option value="10">Calm (α 10Hz)</option></select>
+          <button class="chant-chip ${chant.beatDrums!==false?'on':''}" id="chantBeatChip" onclick="toggleChantBeat()">🥁 Beat</button>
           <select class="chant-sel" id="chantSleep"><option value="0">No timer</option><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option></select>`:''}
       </div>
     </div>`;
 }
 function toggleChantVoice(){ chant.voiceWanted = chant.voiceWanted===false; const c=document.getElementById('chantVoiceChip'); if(c) c.classList.toggle('on', chant.voiceWanted!==false); }
+function toggleChantBeat(){ chant.beatDrums = chant.beatDrums===false; const c=document.getElementById('chantBeatChip'); if(c) c.classList.toggle('on', chant.beatDrums!==false); }
 function setChantMode(m){ stopChant(); chant.mode=m; renderChant(); }
 function toggleChant(){ chant.on ? stopChant() : playChant(); }
 
@@ -1350,9 +1351,8 @@ function playChant(){
   chant.sleepUntil = mins>0 ? Date.now()+mins*60000 : 0;
   try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){}
   if(chant.mode==='sleep'){
-    const dsel=document.getElementById('chantDepth'); chant.beatHz = dsel?(parseFloat(dsel.value)||6):6;
     startBed('sleep');
-    chant.timer=setTimeout(runSleep, 4000); // let the bed settle before the first whisper
+    chant.timer=setTimeout(runSleep, 6000); // let the bed settle before the first whisper
   } else {
     chant.beats=buildBeats(); startBed('active'); runBeat();
   }
@@ -1384,38 +1384,61 @@ function chantSpeakSeq(items, done){
   };
   next();
 }
-// ---- ambient bed: warm pad + (sleep) binaural beats, with fade-in ----
+// ---- lo-fi bed: warm jazzy chords + slow beat + vinyl crackle ----
+function noiseBuf(ctx,secs){ const len=Math.floor(ctx.sampleRate*secs); const b=ctx.createBuffer(1,len,ctx.sampleRate); const d=b.getChannelData(0); for(let i=0;i<len;i++) d[i]=Math.random()*2-1; return b; }
+const LOFI_PROG=[
+  [261.63,329.63,392.00,493.88], // Cmaj7
+  [220.00,261.63,329.63,392.00], // Am7
+  [293.66,349.23,440.00,523.25], // Dm7
+  [196.00,246.94,293.66,349.23], // G7
+];
+function padNote(ctx,freq,t,dur){
+  const g=ctx.createGain(); g.connect(chantAudio.padBus);
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.22,t+0.5); g.gain.setValueAtTime(0.22,t+dur*0.6); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  [0,-0.4,0.4].forEach((det,i)=>{ const o=ctx.createOscillator(); o.type=i===0?'triangle':'sine'; o.frequency.value=freq; o.detune.value=det*5; o.connect(g); o.start(t); o.stop(t+dur+0.05); });
+}
+function kick(ctx,t){ const o=ctx.createOscillator(),g=ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(120,t); o.frequency.exponentialRampToValueAtTime(45,t+0.12); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.5,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+0.22); o.connect(g); g.connect(chantAudio.drumBus); o.start(t); o.stop(t+0.26); }
+function hat(ctx,t,vol){ const s=ctx.createBufferSource(); s.buffer=chantAudio.noise; const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=7000; const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.12,t+0.005); g.gain.exponentialRampToValueAtTime(0.0001,t+0.05); s.connect(hp); hp.connect(g); g.connect(chantAudio.drumBus); s.start(t); s.stop(t+0.06); }
+function pop(ctx,t){ const s=ctx.createBufferSource(); s.buffer=chantAudio.noise; const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2500; const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.05,t+0.002); g.gain.exponentialRampToValueAtTime(0.0001,t+0.03); s.connect(bp); bp.connect(g); g.connect(chantAudio.master); s.start(t); s.stop(t+0.04); }
 function startBed(mode){
   try{
     const ctx = actx = actx || new (window.AudioContext||window.webkitAudioContext)();
     if(ctx.state==='suspended') ctx.resume();
     stopBed();
-    chantAudio.nodes=[];
-    const master=ctx.createGain(); master.gain.value=0.0001; master.connect(ctx.destination); chantAudio.master=master; chantAudio.ctx=ctx;
-    if(mode!=='sleep'){ master.gain.value=0.0001; return; } // practice mode: notes play directly, no bed
-    // warm pad (root + fifth + octave) through a soft lowpass
-    const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=440; lp.connect(master);
-    const padG=ctx.createGain(); padG.gain.value=0.5; padG.connect(lp);
-    [110,164.81,220].forEach(f=>{ const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f; o.connect(padG); o.start(); chantAudio.nodes.push(o); });
-    // slow breathing swell
-    const lfo=ctx.createOscillator(); lfo.type='sine'; lfo.frequency.value=0.07; const lfoG=ctx.createGain(); lfoG.gain.value=0.22; lfo.connect(lfoG); lfoG.connect(padG.gain); lfo.start(); chantAudio.nodes.push(lfo);
-    // binaural beat — carrier split L/R by beatHz (needs headphones)
-    const beatHz=chant.beatHz||6, carrier=174;
-    const bg=ctx.createGain(); bg.gain.value=0.16; bg.connect(master);
-    [[carrier,-1],[carrier+beatHz,1]].forEach(([f,pan])=>{
-      const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f; o.start(); chantAudio.nodes.push(o);
-      if(ctx.createStereoPanner){ const p=ctx.createStereoPanner(); p.pan.value=pan; o.connect(p); p.connect(bg); }
-      else { const m=ctx.createChannelMerger(2); o.connect(m, 0, pan<0?0:1); m.connect(bg); }
-    });
-    master.gain.exponentialRampToValueAtTime(0.5, ctx.currentTime+4); // gentle fade-in
+    chantAudio.nodes=[]; chantAudio.ctx=ctx; chantAudio.noise=noiseBuf(ctx,2);
+    const master=ctx.createGain(); master.gain.value=0.0001; master.connect(ctx.destination); chantAudio.master=master;
+    if(mode!=='sleep'){ master.gain.value=0.0001; return; } // practice mode plays notes directly
+    // pad bus → soft lowpass, gentle tremolo
+    chantAudio.padBus=ctx.createGain(); chantAudio.padBus.gain.value=0.16;
+    const padLp=ctx.createBiquadFilter(); padLp.type='lowpass'; padLp.frequency.value=850; chantAudio.padBus.connect(padLp); padLp.connect(master);
+    const trem=ctx.createOscillator(); trem.type='sine'; trem.frequency.value=0.12; const tremG=ctx.createGain(); tremG.gain.value=0.05; trem.connect(tremG); tremG.connect(chantAudio.padBus.gain); trem.start(); chantAudio.nodes.push(trem);
+    chantAudio.drumBus=ctx.createGain(); chantAudio.drumBus.gain.value=0.5; chantAudio.drumBus.connect(master);
+    // vinyl crackle (looping hiss + pops) and warm low air
+    const cr=ctx.createBufferSource(); cr.buffer=chantAudio.noise; cr.loop=true; const crhp=ctx.createBiquadFilter(); crhp.type='highpass'; crhp.frequency.value=2000; const crg=ctx.createGain(); crg.gain.value=0.015; cr.connect(crhp); crhp.connect(crg); crg.connect(master); cr.start(); chantAudio.nodes.push(cr);
+    const air=ctx.createBufferSource(); air.buffer=chantAudio.noise; air.loop=true; const airlp=ctx.createBiquadFilter(); airlp.type='lowpass'; airlp.frequency.value=300; const airg=ctx.createGain(); airg.gain.value=0.02; air.connect(airlp); airlp.connect(airg); airg.connect(master); air.start(); chantAudio.nodes.push(air);
+    chant.bar=0; lofiBar();
+    master.gain.exponentialRampToValueAtTime(0.6, ctx.currentTime+5);
   }catch(e){}
+}
+function lofiBar(){
+  if(!chant.on || chant.mode!=='sleep') return;
+  const ctx=chantAudio.ctx; if(!ctx){ return; }
+  const bpm=70, beat=60/bpm, bar=beat*4, t0=ctx.currentTime+0.06;
+  LOFI_PROG[chant.bar % LOFI_PROG.length].forEach(f=> padNote(ctx,f,t0,bar*0.96));
+  if(chant.beatDrums!==false){
+    kick(ctx,t0); kick(ctx,t0+beat*2);
+    hat(ctx,t0+beat,0.10); hat(ctx,t0+beat*2.5,0.07); hat(ctx,t0+beat*3,0.10);
+  }
+  if(Math.random()<0.7) pop(ctx, t0+Math.random()*bar);
+  chant.bar++;
+  chant.lofiTimer=setTimeout(lofiBar, bar*1000);
 }
 function stopBed(){
   try{
+    if(chant.lofiTimer){ clearTimeout(chant.lofiTimer); chant.lofiTimer=null; }
     (chantAudio.nodes||[]).forEach(n=>{ try{n.stop&&n.stop();}catch(e){} try{n.disconnect&&n.disconnect();}catch(e){} });
     chantAudio.nodes=[];
-    if(chantAudio.gain){ try{chantAudio.gain.disconnect();}catch(e){} chantAudio.gain=null; }
-    if(chantAudio.master){ try{chantAudio.master.disconnect();}catch(e){} chantAudio.master=null; }
+    ['padBus','drumBus','master'].forEach(k=>{ if(chantAudio[k]){ try{chantAudio[k].disconnect();}catch(e){} chantAudio[k]=null; } });
   }catch(e){}
 }
 // sleep whispers: cycle the spines + sound-bridge hooks, slow & low, over long silences
