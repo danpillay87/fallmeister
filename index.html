@@ -1373,7 +1373,7 @@ function renderChant(){
       <div style="width:38px"></div>
     </div>
     <div class="chant-body ${m==='sleep'?'calm':''}">
-      <div class="chant-sub">${m==='active'?'Sing the spines, grab the hooks — der·den·dem·des to a tune.':'A warm lo-fi bed — soft chords, a slow beat, vinyl crackle. Whisper the rules in, set a timer, and drift off.'}</div>
+      <div class="chant-sub">${m==='active'?'A spoken mini-lesson: what each case means and why ‘the’ changes. Follow along out loud.':'The lesson taught gently over a warm lo-fi bed — what each case is and why. Set a timer and learn as you drift.'}</div>
       <div class="spine-wrap">${spineHTML()}</div>
       <div class="hooks-row">${hooksHTML()}</div>
       <div class="preps-wrap">${prepHTML()}</div>
@@ -1406,51 +1406,66 @@ function clearLit(){ document.querySelectorAll('.sp-w.lit,.hookcard.lit,.preprow
 function litWord(id){ clearLit(); const e=document.getElementById(id); if(e)e.classList.add('lit'); }
 function litHook(id){ clearLit(); const e=document.getElementById(id); if(e)e.classList.add('lit'); }
 
-// one loop = melodic gender spines (der·den·dem·des to a rising tune) + spoken meaning hooks
-function buildBeats(){
-  const imm=chant.mode==='immersion';
-  const beats=[];
-  const spineNotes={m:[NOTE.C4,NOTE.E4,NOTE.G4,NOTE.C5], f:[NOTE.G4,NOTE.G4,NOTE.E4,NOTE.E4], n:[NOTE.C4,NOTE.C4,NOTE.G4,NOTE.C5]};
-  const spineSay={m:'Masculine', f:'Feminine', n:'Neuter'};
-  for(const s of SPINES){
-    if(imm) beats.push({kind:'say', text:spineSay[s.pre], now:spineSay[s.pre]+' — '+s.words.join(', '), ms:1200});
-    s.words.forEach((w,i)=> beats.push({kind:'word', w, id:s.pre+i, note:spineNotes[s.pre][i], ms: imm?620:470}));
-    beats.push({kind:'gap', ms: imm?650:360});
-  }
-  const hookNotes=[NOTE.E4,NOTE.G4,NOTE.C5];
-  const hookDe=['den','dem','des'];
-  const hookEng=['Hit the man — der becomes den. Only he changes.','Give it to dem — like “them”. That\'s the Dative.','Whose? des — like apostrophe S. That\'s the Genitive.'];
-  HOOKCARDS.forEach((h,i)=> beats.push({kind:'hook', id:h.id, de:hookDe[i], note:hookNotes[i], now:h.big+' — '+h.line, eng:hookEng[i], ms: imm?2700:1250}) );
-  const ppNote=[NOTE.E4,NOTE.D4,NOTE.C4];
-  PREPSETS.forEach((p,i)=> beats.push({kind:'prep', id:p.id, de:p.de, eng:p.eng, note:ppNote[i], now:p.list, ms: imm?3200:1900}) );
-  beats.push({kind:'gap', ms: imm?2200:650});
-  return beats;
-}
+function highlight(ids){ clearLit(); (ids||[]).forEach(id=>{ const e=document.getElementById(id); if(e) e.classList.add('lit'); }); }
+// The loop is a spoken BEGINNER LESSON — what each case is, how "the" changes, and why.
+// One noun (Hund = dog) is walked through all four jobs with everyday meaning, then the easy
+// genders, then the prepositions. en = plain-English teaching; de = the German to hear.
+const TEACHING=[
+  {en:"Okay, from the top. In German, the little word for ‘the’ changes its shape depending on the job a noun is doing in the sentence. There are four jobs. We'll follow one word the whole way: Hund — dog.", now:"‘the’ changes by JOB"},
+  {en:"Job one — the DOER. The one doing the action. The dog runs. The dog is the boss, so ‘the’ stays in its plain form: der.", hi:['m0'], now:"① DOER → der"},
+  {de:"der Hund.", hi:['m0'], now:"der Hund — the dog (doing)"},
+  {en:"Job two — the DONE-TO. The action happens to it. I see the dog. Here ‘the’ changes — but only for masculine words. Der becomes den.", hi:['m1'], now:"② DONE-TO → den"},
+  {de:"den Hund.", hi:['m1'], now:"den Hund — (I see) the dog"},
+  {en:"Only the masculine changes for done-to. Feminine and neuter don't budge. This job has a name: the accusative. Done-to equals accusative.", hi:['m1','hk0']},
+  {en:"Job three — the RECEIVER. You give something to it, or do something for it. I give the dog a bone. Now ‘the’ becomes dem.", hi:['m2'], now:"③ RECEIVER → dem"},
+  {de:"dem Hund.", hi:['m2'], now:"dem Hund — (to) the dog"},
+  {en:"Here's your memory hook: dem sounds like ‘them’. You give it to them — dem. The grown-up name for this job is the dative.", hi:['m2','hk1']},
+  {en:"Job four — the OWNER. It belongs to someone. The dog's bone. ‘the’ becomes des.", hi:['m3'], now:"④ OWNER → des"},
+  {de:"des Hundes.", hi:['m3'], now:"des Hundes — the dog's"},
+  {en:"Hook: des sounds like the English apostrophe-S — the dog's. The name for this job is the genitive. Don't let the word scare you — genitive just means ‘belongs to’. That's all.", hi:['m3','hk2']},
+  {en:"So watch one little word do all four jobs. Doer: der. Done-to: den. Receiver: dem. Owner: des.", hi:['m0','m1','m2','m3'], now:"der · den · dem · des"},
+  {de:"der, den, dem, des.", hi:['m0','m1','m2','m3']},
+  {en:"Now the good news, so you don't panic. Only the masculine does all that changing. Feminine words are lazy — ‘the’ just goes die, die, der, der.", hi:['f0','f1','f2','f3'], now:"feminine: die die der der"},
+  {de:"die, die, der, der.", hi:['f0','f1','f2','f3']},
+  {en:"And neuter: das, das, dem, des.", hi:['n0','n1','n2','n3'], now:"neuter: das das dem des"},
+  {de:"das, das, dem, des.", hi:['n0','n1','n2','n3']},
+  {en:"Last piece — and this part needs zero thinking. Some little words always force a job. After these five, it's always done-to — accusative:", hi:['pp-akk'], now:"these → always done-to (accusative)"},
+  {de:"durch, für, gegen, ohne, um.", hi:['pp-akk']},
+  {en:"After these, it's always the receiver — dative:", hi:['pp-dat'], now:"these → always receiver (dative)"},
+  {de:"aus, bei, mit, nach, seit, von, zu.", hi:['pp-dat']},
+  {en:"And these depend on movement. Moving towards it? Done-to — accusative. Already sitting there? Receiver — dative.", hi:['pp-two'], now:"moving → done-to · resting → receiver"},
+  {de:"in, an, auf, über, unter, vor, hinter, neben, zwischen.", hi:['pp-two']},
+  {en:"That's the whole system — four jobs, one little word changing to show them. Let's go round once more.", now:"once more from the top"},
+];
 function playChant(){
   chant.on=true; chant.bi=0;
   const pb=document.getElementById('chantPlay'); if(pb) pb.textContent='⏸ Pause';
   const sel=document.getElementById('chantSleep'); const mins=sel?(parseInt(sel.value)||0):0;
   chant.sleepUntil = mins>0 ? Date.now()+mins*60000 : 0;
   try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){}
-  if(chant.mode==='sleep'){
-    startBed('sleep');
-    chant.timer=setTimeout(runSleep, 6000); // let the bed settle before the first whisper
-  } else {
-    chant.beats=buildBeats(); startBed('active'); runBeat();
-  }
+  startBed(chant.mode);
+  chant.timer=setTimeout(runScript, chant.mode==='sleep'?3500:300);
 }
-function runBeat(){
+function runScript(){
   if(!chant.on) return;
-  if(chant.sleepUntil && Date.now()>chant.sleepUntil){ stopChant(); return; }
-  if(!chant.beats||!chant.beats.length) return;
-  const b=chant.beats[chant.bi % chant.beats.length];
-  const now=document.getElementById('chantNow');
-  if(b.kind==='word'){ litWord(b.id); if(now)now.textContent=b.w; playNote(b.note, chant.mode==='immersion'?0.55:0.38); chantSpeakSeq([{t:b.w,lang:'de-DE',rate:chant.mode==='immersion'?0.85:1.0}]); }
-  else if(b.kind==='hook'){ litHook(b.id); if(now)now.textContent=b.now; playNote(b.note,0.6); const seq=[{t:b.de,lang:'de-DE',rate:0.9}]; if(chant.mode==='immersion') seq.push({t:b.eng,lang:'en-GB',rate:0.95}); chantSpeakSeq(seq); }
-  else if(b.kind==='prep'){ clearLit(); const e=document.getElementById(b.id); if(e)e.classList.add('lit'); if(now)now.textContent=b.now; playNote(b.note,0.5); chantSpeakSeq([{t:b.de,lang:'de-DE',rate:0.95}]); }
-  else if(b.kind==='say'){ clearLit(); if(now)now.textContent=b.now; if(chant.mode==='immersion') chantSpeakSeq([{t:b.text,lang:'en-GB',rate:0.95}]); }
+  const sleep=chant.mode==='sleep';
+  if(chant.sleepUntil){
+    const remain=chant.sleepUntil-Date.now();
+    if(remain<=0){ stopChant(); return; }
+    if(remain<30000 && chantAudio.master && chantAudio.ctx){ try{ chantAudio.master.gain.cancelScheduledValues(chantAudio.ctx.currentTime); chantAudio.master.gain.exponentialRampToValueAtTime(0.0001, chantAudio.ctx.currentTime+Math.max(1,remain/1000)); }catch(e){} }
+  }
+  const step=TEACHING[chant.bi % TEACHING.length];
+  highlight(step.hi);
+  const now=document.getElementById('chantNow'); if(now) now.textContent = step.now || step.en || step.de || '';
   chant.bi++;
-  chant.timer=setTimeout(runBeat, b.ms);
+  const voiceOff = sleep && chant.voiceWanted===false;
+  const lines=[];
+  if(!voiceOff){
+    if(step.en) lines.push({t:step.en, lang:'en-GB', rate: sleep?0.88:1.0});
+    if(step.de) lines.push({t:step.de, lang:'de-DE', rate: sleep?0.82:0.9});
+  }
+  if(lines.length){ chantSpeakSeq(lines, ()=>{ if(chant.on) chant.timer=setTimeout(runScript, sleep?1300:520); }); }
+  else { chant.timer=setTimeout(runScript, sleep?5500:1400); }
 }
 function chantSpeakSeq(items, done){
   if(!('speechSynthesis' in window)){ if(done) chant.timer=setTimeout(done, 1200); return; }
@@ -1584,7 +1599,7 @@ function renderPlanCard(){
   const t=new Date().toISOString().slice(0,10), doneToday=state.lastDone===t;
   el.innerHTML=`<div class="plan-card">
     <div class="pc-top"><span class="pc-title">🌙 Nightly Loop</span><span class="pc-streak">🔥 ${state.streak||0} ${(state.streak===1?'night':'nights')}</span></div>
-    <div class="pc-sub">The whole system in one loop — the spines, the sound-bridges, every preposition. ${doneToday?'Done tonight ✓ — play it again anytime.':'Hit play and blast it. Every night for a month.'}</div>
+    <div class="pc-sub">A spoken lesson on a loop — what each case <em>means</em> and <em>why</em> ‘the’ changes, taught from scratch over a lo-fi bed. ${doneToday?'Done tonight ✓ — play it again anytime.':'Hit play and blast it. Every night for a month.'}</div>
     <button class="pc-cta" onclick="startNightly()">▶︎ Play the loop →</button>
   </div>`;
 }
