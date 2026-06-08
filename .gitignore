@@ -1,0 +1,6 @@
+*.env
+.env
+.eleven*
+*.key
+maker.html
+node_modules/
