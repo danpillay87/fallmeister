@@ -1335,28 +1335,28 @@ let chantAudio={ctx:null, osc:[], gain:null};
 function startChant(){ clearDrill(); chant.mode='active'; show('chantScreen'); renderChant(); }
 
 const SPINES=[
-  {emoji:'♂', cls:'sp-m', pre:'m', words:['der','den','dem','des']},
-  {emoji:'♀', cls:'sp-f', pre:'f', words:['die','die','der','der']},
-  {emoji:'⬡', cls:'sp-n', pre:'n', words:['das','das','dem','des']},
+  {emoji:'👦', cls:'sp-m', pre:'m', words:['der','den','dem','des']},
+  {emoji:'👧', cls:'sp-f', pre:'f', words:['die','die','der','der']},
+  {emoji:'👶', cls:'sp-n', pre:'n', words:['das','das','dem','des']},
 ];
 const HOOKCARDS=[
-  {id:'hk0', emoji:'🥊', big:'der → den', line:'HIT — only the man changes'},
-  {id:'hk1', emoji:'🎁', big:'dem ≈ “them”', line:'GIVE it to them → Dativ'},
-  {id:'hk2', emoji:'🔑', big:'des ≈ “’s”', line:'WHOSE? → Genitiv'},
+  {id:'hk0', emoji:'🥊', big:'der → den', line:'when it’s done TO him'},
+  {id:'hk1', emoji:'🎁', big:'dem ≈ “them”', line:'when you GIVE it to him'},
+  {id:'hk2', emoji:'🔑', big:'des ≈ “’s”', line:'when it’s HIS'},
 ];
 function spineHTML(){
   let h='<div class="spine-head"><span></span><span>Nom</span><span>Akk</span><span>Dat</span><span>Gen</span></div>';
   for(const s of SPINES){ h+=`<div class="spine ${s.cls}"><span class="sp-lab">${s.emoji}</span>`+s.words.map((w,i)=>`<span class="sp-w" id="${s.pre}${i}">${w}</span>`).join('')+`</div>`; }
-  h+=`<div class="spine-note"><b>Only the masculine changes all four</b> (der·den·dem·des). Feminine & neuter barely move.</div>`;
+  h+=`<div class="spine-note"><b>Only boy-words (der) change all four.</b> Girl- & little-one words barely move.</div>`;
   return h;
 }
 function hooksHTML(){
   return HOOKCARDS.map(h=>`<div class="hookcard" id="${h.id}"><span class="hk-emoji">${h.emoji}</span><span class="hk-big">${h.big}</span><span class="hk-line">${h.line}</span></div>`).join('');
 }
 const PREPSETS=[
-  {id:'pp-akk', lab:'Akkusativ — always', list:'durch · für · gegen · ohne · um', de:'durch, für, gegen, ohne, um', eng:'these always take the accusative'},
-  {id:'pp-dat', lab:'Dativ — always', list:'aus · bei · mit · nach · seit · von · zu', de:'aus, bei, mit, nach, seit, von, zu', eng:'these always take the dative'},
-  {id:'pp-two', lab:'Two-way · Wohin?→Akk · Wo?→Dativ', list:'in · an · auf · über · unter · vor · hinter · neben · zwischen', de:'in, an, auf, über, unter, vor, hinter, neben, zwischen', eng:'two-way — moving takes accusative, resting takes dative'},
+  {id:'pp-akk', lab:'Bossy words → DONE-TO (den)', list:'durch · für · gegen · ohne · um', de:'durch, für, gegen, ohne, um', eng:'these always make it done-to'},
+  {id:'pp-dat', lab:'Bossy words → GIVE-TO (dem)', list:'aus · bei · mit · nach · seit · von · zu', de:'aus, bei, mit, nach, seit, von, zu', eng:'these always make it give-to'},
+  {id:'pp-two', lab:'Depends — moving→done-to · staying→give-to', list:'in · an · auf · über · unter · vor · hinter · neben · zwischen', de:'in, an, auf, über, unter, vor, hinter, neben, zwischen', eng:'these depend on moving or staying'},
 ];
 function prepHTML(){
   return PREPSETS.map(p=>`<div class="preprow" id="${p.id}"><span class="pp-lab">${p.lab}</span><span class="pp-list">${p.list}</span></div>`).join('');
@@ -1411,31 +1411,32 @@ function highlight(ids){ clearLit(); (ids||[]).forEach(id=>{ const e=document.ge
 // One noun (Hund = dog) is walked through all four jobs with everyday meaning, then the easy
 // genders, then the prepositions. en = plain-English teaching; de = the German to hear.
 const TEACHING=[
-  {en:"Okay, from the top. In German, the little word for ‘the’ changes its shape depending on the job a noun is doing in the sentence. There are four jobs. We'll follow one word the whole way: Hund — dog.", now:"‘the’ changes by JOB"},
-  {en:"Job one — the DOER. The one doing the action. The dog runs. The dog is the boss, so ‘the’ stays in its plain form: der.", hi:['m0'], now:"① DOER → der"},
-  {de:"der Hund.", hi:['m0'], now:"der Hund — the dog (doing)"},
-  {en:"Job two — the DONE-TO. The action happens to it. I see the dog. Here ‘the’ changes — but only for masculine words. Der becomes den.", hi:['m1'], now:"② DONE-TO → den"},
-  {de:"den Hund.", hi:['m1'], now:"den Hund — (I see) the dog"},
-  {en:"Only the masculine changes for done-to. Feminine and neuter don't budge. This job has a name: the accusative. Done-to equals accusative.", hi:['m1','hk0']},
-  {en:"Job three — the RECEIVER. You give something to it, or do something for it. I give the dog a bone. Now ‘the’ becomes dem.", hi:['m2'], now:"③ RECEIVER → dem"},
-  {de:"dem Hund.", hi:['m2'], now:"dem Hund — (to) the dog"},
-  {en:"Here's your memory hook: dem sounds like ‘them’. You give it to them — dem. The grown-up name for this job is the dative.", hi:['m2','hk1']},
-  {en:"Job four — the OWNER. It belongs to someone. The dog's bone. ‘the’ becomes des.", hi:['m3'], now:"④ OWNER → des"},
-  {de:"des Hundes.", hi:['m3'], now:"des Hundes — the dog's"},
-  {en:"Hook: des sounds like the English apostrophe-S — the dog's. The name for this job is the genitive. Don't let the word scare you — genitive just means ‘belongs to’. That's all.", hi:['m3','hk2']},
-  {en:"So watch one little word do all four jobs. Doer: der. Done-to: den. Receiver: dem. Owner: des.", hi:['m0','m1','m2','m3'], now:"der · den · dem · des"},
+  {en:"Let's learn this with one little dog. His name is Hund — that's ‘dog’ in German.", now:"meet the dog — Hund 🐕"},
+  {en:"In German, the word for ‘the’ likes to change. It changes to show what the dog is doing. Watch.", now:"‘the’ changes its costume"},
+  {en:"One. The dog is the doer — he does something. The dog runs! When he's the doer, ‘the’ is der.", hi:['m0'], now:"① the DOER → der"},
+  {de:"der Hund.", hi:['m0'], now:"der Hund — the dog runs"},
+  {en:"Two. Now something happens to the dog. I see the dog! When it's done to him, ‘the’ becomes den.", hi:['m1'], now:"② DONE-TO → den"},
+  {de:"den Hund.", hi:['m1'], now:"den Hund — I see the dog"},
+  {en:"Three. You give something to the dog. I give the dog a bone! Now ‘the’ is dem.", hi:['m2'], now:"③ GIVE-TO → dem"},
+  {de:"dem Hund.", hi:['m2'], now:"dem Hund — I give the dog a bone"},
+  {en:"Easy trick: dem sounds like ‘them’. You give it to them — dem!", hi:['m2','hk1']},
+  {en:"Four. The bone belongs to the dog. The dog's bone. Now ‘the’ is des.", hi:['m3'], now:"④ IT'S HIS → des"},
+  {de:"des Hundes.", hi:['m3'], now:"des Hundes — the dog's bone"},
+  {en:"Easy trick: des sounds like ‘the dog's’, with an s on the end. His thing — des!", hi:['m3','hk2']},
+  {en:"So our one little dog showed all four. Doer: der. Done-to: den. Give-to: dem. His: des.", hi:['m0','m1','m2','m3'], now:"der · den · dem · des"},
   {de:"der, den, dem, des.", hi:['m0','m1','m2','m3']},
-  {en:"Now the good news, so you don't panic. Only the masculine does all that changing. Feminine words are lazy — ‘the’ just goes die, die, der, der.", hi:['f0','f1','f2','f3'], now:"feminine: die die der der"},
+  {en:"Good news! Only boy-words like ‘dog’ do all that changing. Girl-words are lazy — ‘the’ just goes die, die, der, der.", hi:['f0','f1','f2','f3'], now:"girl-words: die die der der"},
   {de:"die, die, der, der.", hi:['f0','f1','f2','f3']},
-  {en:"And neuter: das, das, dem, des.", hi:['n0','n1','n2','n3'], now:"neuter: das das dem des"},
+  {en:"And little-one words: das, das, dem, des.", hi:['n0','n1','n2','n3'], now:"little-one words: das das dem des"},
   {de:"das, das, dem, des.", hi:['n0','n1','n2','n3']},
-  {en:"Last piece — and this part needs zero thinking. Some little words always force a job. After these five, it's always done-to — accusative:", hi:['pp-akk'], now:"these → always done-to (accusative)"},
+  {en:"One more easy bit. Some tiny words are bossy — they pick the job for you, so you don't have to think. The dog runs through the gate — durch — and it's a done-to one. These are all done-to:", hi:['pp-akk'], now:"bossy words → DONE-TO"},
   {de:"durch, für, gegen, ohne, um.", hi:['pp-akk']},
-  {en:"After these, it's always the receiver — dative:", hi:['pp-dat'], now:"these → always receiver (dative)"},
+  {en:"These bossy words are all give-to ones. Like: I play with the dog — mit.", hi:['pp-dat'], now:"bossy words → GIVE-TO"},
   {de:"aus, bei, mit, nach, seit, von, zu.", hi:['pp-dat']},
-  {en:"And these depend on movement. Moving towards it? Done-to — accusative. Already sitting there? Receiver — dative.", hi:['pp-two'], now:"moving → done-to · resting → receiver"},
+  {en:"And a few depend on moving. Moving to it? Use the done-to word. Sitting still there? Use the give-to word.", hi:['pp-two'], now:"moving → done-to · staying → give-to"},
   {de:"in, an, auf, über, unter, vor, hinter, neben, zwischen.", hi:['pp-two']},
-  {en:"That's the whole system — four jobs, one little word changing to show them. Let's go round once more.", now:"once more from the top"},
+  {en:"That's everything! Four jobs, and ‘the’ changes to show which one. One little dog showed you the lot.", now:"the dog showed you it all 🐕"},
+  {en:"Oh — and if a grown-up uses the big words: nominative is doer, accusative is done-to, dative is give-to, genitive is his. Same thing. Let's go again.", now:"the grown-up names, just so you know"},
 ];
 function playChant(){
   chant.on=true; chant.bi=0;
