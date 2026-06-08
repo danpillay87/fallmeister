@@ -412,6 +412,41 @@ body {
 .chant-body.calm .spine-wrap, .chant-body.calm .hooks-row { opacity:0.5; transition:opacity .4s; }
 .chant-body.calm .spine .sp-w.lit, .chant-body.calm .hookcard.lit { opacity:1; }
 
+/* ---- TODAY'S SESSION (guided loop) ---- */
+.home-free-label { font-size:11px; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); font-weight:700; margin:22px 0 8px; }
+.plan-card { background:linear-gradient(135deg, rgba(167,139,250,.16), rgba(34,211,238,.10)); border:1px solid rgba(167,139,250,.35); border-radius:18px; padding:18px 20px; }
+.plan-card .pc-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+.plan-card .pc-title { font-size:17px; font-weight:800; }
+.plan-card .pc-streak { font-size:13px; font-weight:800; color:var(--fire); }
+.plan-card .pc-sub { font-size:12.5px; color:var(--text-dim); margin-bottom:14px; }
+.plan-card .pc-cta { width:100%; background:var(--accent); color:#fff; border:none; border-radius:14px; padding:14px; font-size:16px; font-weight:800; font-family:inherit; cursor:pointer; }
+.plan-card .pc-cta.done { background:var(--surface2); color:var(--correct); border:1px solid rgba(52,211,153,.4); }
+.plan-card .pc-dots { display:flex; gap:6px; margin-top:10px; }
+.plan-card .pc-dot { flex:1; height:6px; border-radius:99px; background:var(--surface3); }
+.plan-card .pc-dot.on { background:var(--accent); }
+/* plan screen */
+.plan-wrap { max-width:440px; margin:10px auto 0; padding:0 20px; }
+.plan-h { text-align:center; margin-bottom:6px; }
+.plan-h h2 { font-size:22px; font-weight:900; }
+.plan-h p { font-size:13px; color:var(--text-dim); margin-top:4px; }
+.plan-steps { display:flex; flex-direction:column; gap:10px; margin:18px 0; }
+.plan-step { display:flex; align-items:center; gap:14px; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:15px 16px; }
+.plan-step.next { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+.plan-step.done { opacity:.6; }
+.plan-step .ps-ic { font-size:24px; }
+.plan-step .ps-txt h4 { font-size:15px; font-weight:800; }
+.plan-step .ps-txt p { font-size:12px; color:var(--text-dim); }
+.plan-step .ps-check { margin-left:auto; font-size:18px; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--border); color:var(--text-dim); }
+.plan-step.done .ps-check { background:var(--correct); border-color:var(--correct); color:#fff; }
+.plan-cta { width:100%; background:var(--accent); color:#fff; border:none; border-radius:14px; padding:15px; font-size:17px; font-weight:800; font-family:inherit; cursor:pointer; }
+.plan-done-banner { text-align:center; font-size:18px; font-weight:800; color:var(--correct); margin:10px 0; }
+/* say-it production cards */
+.say-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:34px 26px; text-align:center; max-width:420px; margin:0 auto; min-height:230px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; cursor:pointer; }
+.say-prompt { font-size:24px; font-weight:800; }
+.say-tip { font-size:13px; color:var(--text-dim); }
+.say-answer { font-size:30px; font-weight:900; color:var(--accent); }
+.say-en { font-size:13px; color:var(--text-mid); }
+
 /* ---- MASCOT ---- */
 .mascot { width:72px; height:72px; position:relative; flex-shrink:0; }
 .mascot-svg { width:100%; height:100%; display:block; overflow:visible; }
@@ -484,7 +519,9 @@ body {
     <div class="mascot idle" id="homeMascot" style="width:88px;height:88px;margin:0 auto 6px;"></div>
     <h2>German Cases in 30 Days</h2>
   </div>
+  <div id="planCard"></div>
   <div class="goal-wrap" id="goalWrap"></div>
+  <div class="home-free-label">Free practice</div>
   <div class="mode-list">
     <div class="mode-item" onclick="startLessonSwipe()">
       <div class="mi-icon">📖</div>
@@ -536,6 +573,10 @@ body {
 </div>
 
 <div class="screen" id="chantScreen"></div>
+
+<div class="screen" id="planScreen"></div>
+<div class="screen" id="sayScreen"></div>
+<div class="screen" id="warmupScreen"></div>
 
 <div class="screen" id="resultsScreen"></div>
 
@@ -703,17 +744,34 @@ const SLIDES = [
 //  STATE
 // ============================================================
 let state = loadState();
-function loadState() {
-  try { const s=JSON.parse(localStorage.getItem('fallmeister')); if(s&&s.version>=3) return {...freshState(),...s,version:4}; } catch(e){}
-  return freshState();
-}
 function freshState() {
+  const cell=()=>({c:0,t:0,due:0,iv:0});
+  const m={}; for(const c of CASES) m[c]={m:cell(),f:cell(),n:cell()};
   return {
-    version:4, firstDay:new Date().toISOString().slice(0,10), bestStreak:0, sessions:[],
-    mastery:{nom:{m:{c:0,t:0},f:{c:0,t:0},n:{c:0,t:0}},akk:{m:{c:0,t:0},f:{c:0,t:0},n:{c:0,t:0}},dat:{m:{c:0,t:0},f:{c:0,t:0},n:{c:0,t:0}},gen:{m:{c:0,t:0},f:{c:0,t:0},n:{c:0,t:0}}},
+    version:5, firstDay:new Date().toISOString().slice(0,10), bestStreak:0, streak:0, lastDone:'', sessions:[],
+    plan:{date:'',steps:{}}, mastery:m,
   };
 }
+function loadState() {
+  let s; try { s=JSON.parse(localStorage.getItem('fallmeister')); } catch(e){}
+  const base=freshState();
+  if(s&&s.version>=3){
+    const st={...base,...s, version:5};
+    st.mastery=st.mastery||{};
+    for(const c of CASES){ st.mastery[c]=st.mastery[c]||{}; for(const g of['m','f','n']){ const cl=st.mastery[c][g]||{}; st.mastery[c][g]={c:cl.c||0,t:cl.t||0,due:cl.due||0,iv:cl.iv||0}; } }
+    st.plan=st.plan||{date:'',steps:{}}; st.streak=st.streak||0; st.lastDone=st.lastDone||'';
+    return st;
+  }
+  return base;
+}
 function save() { localStorage.setItem('fallmeister',JSON.stringify(state)); }
+// spaced repetition: expanding intervals (days) per case×gender cell
+const SR_IV=[0,1,3,7,14,30], DAY=86400000;
+function srUpdate(c,g,ok){
+  const m=state.mastery[c]&&state.mastery[c][g]; if(!m) return;
+  m.iv = ok ? Math.min((m.iv||0)+1, SR_IV.length-1) : 0;
+  m.due = Date.now() + SR_IV[m.iv]*DAY;
+}
 
 // ============================================================
 //  SETTINGS
@@ -858,7 +916,7 @@ function confettiBurst(n=44) {
 //  NAV
 // ============================================================
 function show(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-function goHome() { clearDrill(); show('homeScreen'); renderHomeGrid(); updateNav(); }
+function goHome() { clearDrill(); planActive=false; planStep=null; show('homeScreen'); renderHomeGrid(); updateNav(); }
 function updateNav() {
   const d=Math.max(1,Math.floor((new Date()-new Date(state.firstDay))/86400000)+1);
   document.getElementById('dayCount').textContent=Math.min(d,30);
@@ -947,10 +1005,15 @@ function startTimer() {
   },100);
 }
 function pickWeak() {
-  let worst=[],wr=1;
-  for(const c of CASES) for(const g of['m','f','n']){const m=state.mastery[c][g],rate=m.t===0?0.5:m.c/m.t;if(rate<wr){worst=[{c,g}];wr=rate;}else if(rate===wr)worst.push({c,g});}
-  if(Math.random()<0.6&&worst.length)return worst[Math.floor(Math.random()*worst.length)];
-  return{c:CASES[Math.floor(Math.random()*4)],g:['m','f','n'][Math.floor(Math.random()*3)]};
+  const now=Date.now(), cells=[];
+  for(const c of CASES) for(const g of['m','f','n']){ cells.push({c,g,m:state.mastery[c][g]}); }
+  // prefer cells that are DUE (spacing); within those, bias to the weakest (lowest accuracy)
+  const due=cells.filter(x=>!x.m.due || x.m.due<=now);
+  const pool=due.length?due:cells;
+  pool.sort((a,b)=>{ const ra=a.m.t?a.m.c/a.m.t:0, rb=b.m.t?b.m.c/b.m.t:0; return ra-rb; });
+  const half=pool.slice(0, Math.max(1, Math.ceil(pool.length/2)));
+  const pick=(Math.random()<0.7?half:pool)[Math.floor(Math.random()*(Math.random()<0.7?half.length:pool.length))];
+  return {c:pick.c, g:pick.g};
 }
 
 // short reusable pattern shown on article-mode misses
@@ -1093,7 +1156,7 @@ function answerDrill(answer,idx) {
   drill.total++;
   if(ok){drill.score++;drill.streak++;if(drill.streak>drill.maxStreak)drill.maxStreak=drill.streak;if(drill.streak>state.bestStreak){state.bestStreak=drill.streak;save();}}
   else drill.streak=0;
-  state.mastery[q.case][q.gender].t++; if(ok)state.mastery[q.case][q.gender].c++; save();
+  state.mastery[q.case][q.gender].t++; if(ok)state.mastery[q.case][q.gender].c++; srUpdate(q.case,q.gender,ok); save();
 
   const card=document.getElementById('drillCard'), btn=document.getElementById('dopt'+idx);
   const masc=document.getElementById('drillMascot');
@@ -1150,8 +1213,8 @@ function showResults() {
     <div class="r-score">${pct}%</div>
     <div class="r-sub">${drill.score}/${drill.total} correct · streak ${drill.maxStreak}</div>
     <div class="result-btns">
-      <button class="r-btn primary" onclick="startDrill(drill.type)">Again</button>
-      <button class="r-btn ghost" onclick="goHome()">Home</button>
+      ${planActive?`<button class="r-btn primary" onclick="completePlanStep('${planStep}');renderPlanScreen()">Continue session →</button>`
+                  :`<button class="r-btn primary" onclick="startDrill(drill.type)">Again</button><button class="r-btn ghost" onclick="goHome()">Home</button>`}
     </div>
   </div>`;
   h+='<div style="margin-top:24px;width:100%;max-width:420px;"><div class="mini-grid">';
@@ -1190,7 +1253,7 @@ function ninjaFall() {
   if(!ninja.active)return;const arena=document.getElementById('ninjaArena');if(!arena)return;
   const dur=Math.max(4000,10000-ninja.score*100),now=Date.now();let html='';const rm=[];
   for(const w of ninja.words){const y=(now-w.spawned)/dur*100;
-    if(y>=95){rm.push(w.id);ninja.lives--;ninja.streak=0;ninja.combo=1;state.mastery[w.case][w.gender].t++;save();
+    if(y>=95){rm.push(w.id);ninja.lives--;ninja.streak=0;ninja.combo=1;state.mastery[w.case][w.gender].t++;srUpdate(w.case,w.gender,false);save();
       if(ninja.lives<=0){ninja.active=false;clearInterval(ninja.fallInt);showNinjaResults();return;}renderNinjaHud();continue;}
     const gi=GENDER_INFO[w.gender];
     html+=`<div class="falling-word fw-${w.gender}" style="left:${w.x}%;top:${y}%"><span class="fw-case">${CN[w.case].slice(0,3)}</span>${gi.emoji} ${w.noun.de}</div>`;
@@ -1203,7 +1266,7 @@ function ninjaSubmit(a) {
   const match=sorted.find(w=>w.correct===a);const inp=document.getElementById('ninjaInput');
   if(match){ninja.words=ninja.words.filter(w=>w.id!==match.id);ninja.score+=ninja.combo;ninja.streak++;
     if(ninja.streak>ninja.maxStreak)ninja.maxStreak=ninja.streak;if(ninja.streak>state.bestStreak){state.bestStreak=ninja.streak;save();}
-    ninja.combo=1+Math.floor(ninja.streak/5);state.mastery[match.case][match.gender].t++;state.mastery[match.case][match.gender].c++;save();
+    ninja.combo=1+Math.floor(ninja.streak/5);state.mastery[match.case][match.gender].t++;state.mastery[match.case][match.gender].c++;srUpdate(match.case,match.gender,true);save();
     inp.style.borderColor='var(--correct)';
   }else{ninja.streak=0;ninja.combo=1;inp.style.borderColor='var(--wrong)';}
   setTimeout(()=>{inp.style.borderColor='var(--border)';},200);renderNinjaHud();
@@ -1252,7 +1315,7 @@ function renderGoal() {
 // ============================================================
 audio.init();
 renderToggles();
-function bootHome(){ const hm=document.getElementById('homeMascot'); renderMascot(hm,'a','happy',true); setTimeout(()=>{if(hm&&hm.isConnected)renderMascot(hm,'a','idle',true);},650); renderGoal(); }
+function bootHome(){ const hm=document.getElementById('homeMascot'); renderMascot(hm,'a','happy',true); setTimeout(()=>{if(hm&&hm.isConnected)renderMascot(hm,'a','idle',true);},650); renderGoal(); if(typeof renderPlanCard==='function') renderPlanCard(); }
 const _goHome=goHome;
 goHome=function(){ _goHome(); bootHome(); };
 
@@ -1480,6 +1543,104 @@ function stopChant(){
   if(typeof clearLit==='function') clearLit();
   const now=document.getElementById('chantNow'); if(now) now.textContent='—';
 }
+
+// ============================================================
+//  TODAY'S SESSION — guided daily loop (the planter)
+// ============================================================
+let planActive=false, planStep=null, say={};
+const PLAN_STEPS=[
+  {key:'warmup', icon:'🧠', label:'Warm-up', sub:'Spine + sound-bridges, out loud'},
+  {key:'blitz',  icon:'⚡', label:'Article Blitz', sub:'60s — recall the article'},
+  {key:'prep',   icon:'🎯', label:'Preposition Snap', sub:'Which case does it force?'},
+  {key:'say',    icon:'🗣', label:'Say it', sub:'3 phrases, produced out loud'},
+];
+function ensurePlan(){ const t=new Date().toISOString().slice(0,10); if(!state.plan||state.plan.date!==t){ state.plan={date:t, steps:{}}; save(); } }
+function renderPlanCard(){
+  ensurePlan();
+  const el=document.getElementById('planCard'); if(!el) return;
+  const done=PLAN_STEPS.filter(s=>state.plan.steps[s.key]).length, total=PLAN_STEPS.length, allDone=done===total;
+  el.innerHTML=`<div class="plan-card">
+    <div class="pc-top"><span class="pc-title">🎯 Today’s session</span><span class="pc-streak">🔥 ${state.streak||0}</span></div>
+    <div class="pc-sub">${allDone?'Done for today — nice work. Free practice is below anytime.':'~7 min: warm-up → drills → say it. This is the daily planter.'}</div>
+    <button class="pc-cta ${allDone?'done':''}" onclick="startPlan()">${allDone?'✓ Completed — go again':(done?`Continue session (${done}/${total}) →`:'Start today’s session →')}</button>
+    <div class="pc-dots">${PLAN_STEPS.map(s=>`<span class="pc-dot ${state.plan.steps[s.key]?'on':''}"></span>`).join('')}</div>
+  </div>`;
+}
+function startPlan(){ ensurePlan(); planActive=true; renderPlanScreen(); }
+function maybeCompleteDay(){
+  const t=new Date().toISOString().slice(0,10);
+  if(state.lastDone===t) return;
+  if(!PLAN_STEPS.every(s=>state.plan.steps[s.key])) return;
+  const y=new Date(Date.now()-DAY).toISOString().slice(0,10);
+  state.streak=(state.lastDone===y?(state.streak||0)+1:1); state.lastDone=t; save();
+  confettiBurst(50); sfx('win');
+}
+function renderPlanScreen(){
+  planActive=true; ensurePlan();
+  const steps=PLAN_STEPS.map(s=>({...s,done:!!state.plan.steps[s.key]}));
+  const next=steps.find(s=>!s.done), allDone=!next;
+  if(allDone) maybeCompleteDay();
+  let h=`<div class="hud"><button class="hud-close" onclick="goHome()">✕</button><span class="hud-score">🔥 ${state.streak||0}</span><div style="width:38px"></div></div>
+    <div class="plan-wrap">
+      <div class="plan-h"><h2>Today’s session</h2><p>${allDone?'All four done — great work.':'~7 minutes · tap a step to begin'}</p></div>
+      <div class="plan-steps">`;
+  for(const s of steps){
+    h+=`<div class="plan-step ${s.done?'done':''} ${(!s.done&&s===next)?'next':''}" ${s.done?'':`onclick="launchPlanStep('${s.key}')"`}>
+      <span class="ps-ic">${s.icon}</span><div class="ps-txt"><h4>${s.label}</h4><p>${s.sub}</p></div>
+      <span class="ps-check">${s.done?'✓':''}</span></div>`;
+  }
+  h+='</div>';
+  h+= allDone ? `<div class="plan-done-banner">🎉 Session complete · 🔥 ${state.streak||0}-day streak</div><button class="plan-cta" onclick="goHome()">Done</button>`
+              : `<button class="plan-cta" onclick="launchPlanStep('${next.key}')">${next.icon} Start: ${next.label}</button>`;
+  h+='</div>';
+  document.getElementById('planScreen').innerHTML=h; show('planScreen');
+}
+function launchPlanStep(key){
+  planStep=key; planActive=true;
+  if(key==='warmup') renderWarmup();
+  else if(key==='blitz') startDrill('article');
+  else if(key==='prep') startDrill('preposition');
+  else if(key==='say') startSay();
+}
+function completePlanStep(key){ if(!key) return; ensurePlan(); state.plan.steps[key]=true; save(); }
+function renderWarmup(){
+  document.getElementById('warmupScreen').innerHTML=`
+    <div class="hud"><button class="hud-close" onclick="goHome()">✕</button><span class="hud-score">Warm-up</span><div style="width:38px"></div></div>
+    <div class="chant-body" style="max-width:440px;margin:0 auto;text-align:center;">
+      <div class="chant-sub">Say these out loud once. <b>der·den·dem·des</b> — dem≈“them”, des≈“’s”, den = the man gets hit.</div>
+      <div class="spine-wrap">${spineHTML()}</div>
+      <div class="hooks-row">${hooksHTML()}</div>
+      <div class="chant-controls"><button class="chant-play" onclick="completePlanStep('warmup');renderPlanScreen()">Got it ✓ — next</button></div>
+    </div>`;
+  show('warmupScreen');
+}
+// "Say it" — production: English prompt → say the German prepositional phrase → check
+const PREP_EN={durch:'through',['für']:'for',gegen:'against',ohne:'without',um:'around',aus:'out of',bei:'at',mit:'with',von:'from',zu:'to',nach:'after',seit:'since'};
+function buildSayCard(){
+  const useDat=Math.random()<0.5, list=useDat?PREPS.dat:PREPS.akk, cs=useDat?'dat':'akk';
+  const prep=list[Math.floor(Math.random()*list.length)];
+  const g=['m','f','n'][Math.floor(Math.random()*3)], ns=NOUNS.filter(n=>n.g===g), noun=ns[Math.floor(Math.random()*ns.length)];
+  const art=ART.def[cs][g];
+  return { en:`${PREP_EN[prep]||prep} the ${noun.en} (${g.toUpperCase()})`, de:`${prep} ${art} ${noun.de}`, hint:`${prep} → ${CN[cs]}, ${GENDER_INFO[g].label}` };
+}
+function startSay(){ say={i:0, revealed:false, cards:[buildSayCard(),buildSayCard(),buildSayCard()]}; renderSay(); }
+function renderSay(){
+  const c=say.cards[say.i];
+  document.getElementById('sayScreen').innerHTML=`
+    <div class="hud"><button class="hud-close" onclick="goHome()">✕</button><span class="hud-score">Say it · ${say.i+1}/3</span><div style="width:38px"></div></div>
+    <div style="flex:1;display:flex;align-items:center;padding:0 20px;">
+      <div class="say-card" id="sayCard" onclick="sayReveal()">
+        ${say.revealed
+          ? `<div class="say-tip">${c.hint}</div><div class="say-answer">${c.de}</div><div class="say-en">“${c.en}”</div><button class="speaker-btn" onclick="event.stopPropagation();saySpeak()">🔊</button>`
+          : `<div class="say-tip">Say it in German, out loud:</div><div class="say-prompt">${c.en}</div><div class="say-tip">tap to check</div>`}
+      </div>
+    </div>
+    <div class="options-strip">${say.revealed?`<button class="opt-pill" style="max-width:220px;background:var(--accent);color:#fff;border-color:var(--accent)" onclick="sayNext()">${say.i<2?'Next →':'Finish ✓'}</button>`:''}</div>`;
+  show('sayScreen');
+}
+function sayReveal(){ if(!say.revealed){ say.revealed=true; renderSay(); saySpeak(); } }
+function saySpeak(){ const c=say.cards[say.i]; const w=settings.voice; settings.voice=true; audio.speak(c.de); settings.voice=w; }
+function sayNext(){ if(say.i<2){ say.i++; say.revealed=false; renderSay(); } else { completePlanStep('say'); renderPlanScreen(); } }
 
 // INIT
 updateNav(); renderHomeGrid(); bootHome();
