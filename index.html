@@ -400,13 +400,21 @@ body {
 .spine.sp-m .sp-w { box-shadow:inset 0 0 0 1.5px rgba(124,108,240,.4); }
 .spine-note { font-size:11.5px; color:var(--text-dim); margin:4px 0 2px; line-height:1.4; }
 .spine-note b { color:var(--mask); }
-.hooks-row { display:flex; gap:8px; margin-top:14px; }
-.hookcard { flex:1; background:var(--surface2); border-radius:12px; padding:12px 6px; display:flex; flex-direction:column; gap:3px; align-items:center; transition:transform .15s, background .15s; }
+.hooks-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.hookcard { flex:1 1 70px; min-width:70px; background:var(--surface2); border-radius:12px; padding:12px 6px; display:flex; flex-direction:column; gap:3px; align-items:center; transition:transform .15s, background .15s; }
 .hookcard .hk-emoji { font-size:22px; }
-.hookcard .hk-big { font-size:15px; font-weight:800; color:var(--text); }
+.hookcard .hk-big { font-size:14px; font-weight:800; color:var(--text); white-space:nowrap; }
 .hookcard .hk-line { font-size:10px; color:var(--text-dim); text-align:center; line-height:1.25; }
 .hookcard.lit { background:rgba(167,139,250,.2); transform:scale(1.06); }
 .hookcard.lit .hk-big { color:var(--accent); }
+.anchors-wrap { margin-top:14px; display:flex; flex-direction:column; gap:6px; }
+.anchors-head { font-size:9px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-dim); font-weight:800; text-align:center; margin-bottom:2px; }
+.anchor { background:var(--surface2); border-radius:10px; padding:8px 12px; text-align:left; }
+.anchor .an-de { font-size:14.5px; font-weight:700; color:var(--text-mid); }
+.anchor .an-de b { color:var(--accent); }
+.anchor .an-sub { font-size:10.5px; color:var(--text-dim); margin-top:2px; }
+.anchor .an-sub b { color:var(--accent); text-transform:uppercase; letter-spacing:.4px; font-size:9.5px; font-weight:800; }
+.chant-body.calm .anchors-wrap { opacity:0.5; transition:opacity .4s; }
 .preps-wrap { margin-top:12px; display:flex; flex-direction:column; gap:7px; }
 .preprow { background:var(--surface2); border-radius:10px; padding:9px 12px; text-align:left; transition:background .2s, transform .2s; }
 .preprow .pp-lab { display:block; font-size:9px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-dim); font-weight:800; margin-bottom:2px; }
@@ -1343,10 +1351,21 @@ const SPINES=[
   {emoji:'👶', cls:'sp-n', pre:'n', words:['das','das','dem','des']},
 ];
 const HOOKCARDS=[
-  {id:'hk0', emoji:'👀', big:'der → den', line:'when it’s done TO him'},
-  {id:'hk1', emoji:'🎁', big:'dem ≈ “them”', line:'when you GIVE it to him'},
-  {id:'hk2', emoji:'🔑', big:'des ≈ “’s”', line:'when it’s HIS'},
+  {id:'hk0', emoji:'🚪', big:'der', line:'the DOORMAN — he DOES it (doer)'},
+  {id:'hk1', emoji:'🦁', big:'den', line:'the lion’s DEN — dragged IN (done-to)'},
+  {id:'hk2', emoji:'🎁', big:'dem ≈ “them”', line:'GIVE it to them (give-to)'},
+  {id:'hk3', emoji:'🔑', big:'des ≈ “’s”', line:'the dog’S — it’s HIS'},
 ];
+const ANCHORS=[
+  {de:'<b>der</b> Hund läuft', tag:'doer', en:'the dog runs'},
+  {de:'ich sehe <b>den</b> Hund', tag:'done-to', en:'I see the dog'},
+  {de:'ich gebe <b>dem</b> Hund einen Knochen', tag:'give-to', en:'I give the dog a bone'},
+  {de:'der Knochen <b>des</b> Hundes', tag:'his', en:'the dog’s bone'},
+];
+function anchorsHTML(){
+  return `<div class="anchors-head">One dog · four sentences · one per job</div>`+
+    ANCHORS.map(a=>`<div class="anchor"><div class="an-de">${a.de}</div><div class="an-sub"><b>${a.tag}</b> · ${a.en}</div></div>`).join('');
+}
 function spineHTML(){
   let h='<div class="spine-head"><span></span><span>Nom</span><span>Akk</span><span>Dat</span><span>Gen</span></div>';
   for(const s of SPINES){ h+=`<div class="spine ${s.cls}"><span class="sp-lab">${s.emoji}</span>`+s.words.map((w,i)=>`<span class="sp-w" id="${s.pre}${i}">${w}</span>`).join('')+`</div>`; }
@@ -1379,6 +1398,7 @@ function renderChant(){
       <div class="chant-sub">${m==='active'?'A spoken mini-lesson: what each case means and why ‘the’ changes. Follow along out loud.':'The lesson taught gently over a warm lo-fi bed — what each case is and why. Set a timer and learn as you drift.'}</div>
       <div class="spine-wrap">${spineHTML()}</div>
       <div class="hooks-row">${hooksHTML()}</div>
+      <div class="anchors-wrap">${anchorsHTML()}</div>
       <div class="preps-wrap">${prepHTML()}</div>
       <div class="chant-now" id="chantNow">—</div>
       <div class="chant-controls">
@@ -1421,16 +1441,16 @@ function highlight(ids){ clearLit(); (ids||[]).forEach(id=>{ const e=document.ge
 const TEACHING=[
   {en:"Let's learn this with one little dog. His name is Hund — that's ‘dog’ in German.", now:"meet the dog — Hund 🐕"},
   {en:"In German, the word for ‘the’ likes to change. It changes to show what the dog is doing. Watch.", now:"‘the’ changes its costume"},
-  {en:"One. The dog is the doer — he does something. The dog runs! When he's the doer, ‘the’ is der.", hi:['m0'], now:"① the DOER → der"},
-  {de:"der Hund.", hi:['m0'], now:"der Hund — the dog runs"},
-  {en:"Two. Now something happens to the dog. I see the dog! When it's done to him, ‘the’ becomes den.", hi:['m1'], now:"② DONE-TO → den"},
-  {de:"den Hund.", hi:['m1'], now:"den Hund — I see the dog"},
+  {en:"One. The dog is the doer — he does something. The dog runs! When he's the doer, ‘the’ is der.", hi:['m0','hk0'], now:"① the DOER → der"},
+  {de:"der Hund.", hi:['m0','hk0'], now:"der Hund — the dog runs"},
+  {en:"Two. Now something happens to the dog. I see the dog! When it's done to him, ‘the’ becomes den.", hi:['m1','hk1'], now:"② DONE-TO → den"},
+  {de:"den Hund.", hi:['m1','hk1'], now:"den Hund — I see the dog"},
   {en:"Three. You give something to the dog. I give the dog a bone! Now ‘the’ is dem.", hi:['m2'], now:"③ GIVE-TO → dem"},
   {de:"dem Hund.", hi:['m2'], now:"dem Hund — I give the dog a bone"},
-  {en:"Easy trick: dem sounds like ‘them’. You give it to them — dem!", hi:['m2','hk1']},
+  {en:"Easy trick: dem sounds like ‘them’. You give it to them — dem!", hi:['m2','hk2']},
   {en:"Four. The bone belongs to the dog. The dog's bone. Now ‘the’ is des.", hi:['m3'], now:"④ IT'S HIS → des"},
   {de:"des Hundes.", hi:['m3'], now:"des Hundes — the dog's bone"},
-  {en:"Easy trick: des sounds like ‘the dog's’, with an s on the end. His thing — des!", hi:['m3','hk2']},
+  {en:"Easy trick: des sounds like ‘the dog's’, with an s on the end. His thing — des!", hi:['m3','hk3']},
   {en:"So our one little dog showed all four. Doer: der. Done-to: den. Give-to: dem. His: des.", hi:['m0','m1','m2','m3'], now:"der · den · dem · des"},
   {de:"der, den, dem, des.", hi:['m0','m1','m2','m3']},
   {en:"You might wonder — how do I know if a word is a boy-word or a girl-word? Mostly you just learn each one, like a friend's name. Our dog is a boy-word — so master him first, the rest comes later.", now:"which family? — you learn each word"},
