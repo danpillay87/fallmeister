@@ -390,6 +390,26 @@ body {
 .chant-play { background:var(--accent); color:#fff; border:none; border-radius:14px; padding:14px 34px; font-size:17px; font-weight:800; font-family:inherit; cursor:pointer; }
 .chant-play:hover { opacity:.92; }
 .chant-sel { background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:12px; padding:13px 14px; font-size:14px; font-family:inherit; font-weight:600; }
+/* streamlined player */
+.chant-title { font-size:14px; font-weight:800; color:var(--text-mid); }
+.player { max-width:440px; margin:2px auto 20px; }
+.bigplay { width:100%; display:flex; align-items:center; justify-content:center; gap:10px; background:var(--accent); color:#fff; border:none; border-radius:16px; padding:18px; font-size:18px; font-weight:800; font-family:inherit; cursor:pointer; transition:background .2s, transform .08s, box-shadow .2s; }
+.bigplay:active { transform:scale(.99); }
+.bigplay .bp-ic { font-size:18px; }
+.bigplay.playing { background:transparent; color:var(--accent); box-shadow:inset 0 0 0 2px var(--accent); }
+.prog { height:6px; background:var(--surface2); border-radius:99px; margin-top:12px; cursor:pointer; overflow:hidden; }
+.prog-fill { height:100%; width:0%; background:var(--accent); border-radius:99px; }
+.now { margin-top:12px; min-height:20px; font-size:14px; font-weight:700; color:var(--accent); text-align:center; line-height:1.4; }
+.player-row { display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
+.player-row .chip { background:var(--surface2); border:1px solid var(--border); color:var(--text-mid); border-radius:99px; padding:10px 15px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; text-decoration:none; }
+.player-row select.chip { -webkit-appearance:none; appearance:none; text-align:center; }
+.player-row .chip:hover { border-color:var(--accent); color:var(--accent); }
+.preps-details { max-width:440px; margin:16px auto 0; text-align:left; }
+.preps-details summary { font-size:12px; color:var(--text-dim); cursor:pointer; padding:8px 2px; font-weight:700; list-style:none; }
+.preps-details summary::-webkit-details-marker { display:none; }
+.preps-details summary:before { content:'▸ '; }
+.preps-details[open] summary:before { content:'▾ '; }
+.preps-details .preps-wrap { margin-top:6px; }
 /* spines (gender down the cases) + meaning hooks */
 .spine-head { display:grid; grid-template-columns:40px repeat(4,1fr); gap:6px; margin-bottom:5px; }
 .spine-head span { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); font-weight:700; text-align:center; }
@@ -1397,56 +1417,61 @@ function prepHTML(){
   return PREPSETS.map(p=>`<div class="preprow" id="${p.id}"><span class="pp-lab">${p.lab}</span><span class="pp-list">${p.list}</span></div>`).join('');
 }
 function renderChant(){
-  const m=chant.mode;
   document.getElementById('chantScreen').innerHTML=`
     <div class="hud">
       <button class="hud-close" onclick="stopChant();goHome()">✕</button>
-      <div class="chant-modes">
-        <button class="chant-mode-btn ${m==='active'?'on':''}" onclick="setChantMode('active')">🔁 Practice</button>
-        <button class="chant-mode-btn ${m==='sleep'?'on':''}" onclick="setChantMode('sleep')">🌙 Sleep</button>
-      </div>
+      <div class="chant-title">🌙 Nightly Loop</div>
       <div style="width:38px"></div>
     </div>
-    <div class="chant-body ${m==='sleep'?'calm':''}">
-      <div class="chant-sub">${m==='active'?'A spoken mini-lesson: what each case means and why ‘the’ changes. Follow along out loud.':'The lesson taught gently over a warm lo-fi bed — what each case is and why. Set a timer and learn as you drift.'}</div>
+    <div class="chant-body">
+      <div class="player">
+        <button class="bigplay" id="chantPlay" onclick="toggleChant()"><span class="bp-ic">▶</span><span class="bp-tx">Play the lesson</span></button>
+        <div class="prog" id="progWrap" onclick="seekChant(event)"><div class="prog-fill" id="progFill"></div></div>
+        <div class="now" id="chantNow">der · den · dem · des — the cards light up as you listen</div>
+        <div class="player-row">
+          <button class="chip" id="vibeChip" onclick="cycleBed()" title="Music — tap to change">🎵 Auto</button>
+          <select class="chip" id="chantSleep" title="Auto-stop"><option value="0">No timer</option><option value="20">Stop · 20m</option><option value="30" selected>Stop · 30m</option><option value="45">Stop · 45m</option><option value="60">Stop · 60m</option></select>
+          <a class="chip" href="learn-de.mp3" download="fallmeister-german-lesson.mp3" title="Save for offline">⬇ Save</a>
+        </div>
+        <audio id="lessonAudio" preload="none" src="learn-voice.mp3"></audio>
+        <audio id="bedAudio" loop preload="none"></audio>
+      </div>
+
       <div class="spine-wrap">${spineHTML()}</div>
       <div class="hooks-row">${hooksHTML()}</div>
       <div class="anchors-wrap">${anchorsHTML()}</div>
-      <div class="preps-wrap">${prepHTML()}</div>
-      <div class="chant-now" id="chantNow">—</div>
-      <div class="chant-controls">
-        <button class="chant-play" id="chantPlay" onclick="toggleChant()">▶︎ Play</button>
-        <button class="chant-chip" id="vibeChip" onclick="cycleBed()" title="Music vibe — tap to change">🎵 Auto</button>
-        <select class="chant-sel" id="chantSleep" title="Auto-stop after…"><option value="0">No timer</option><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option></select>
-      </div>
-      <div class="lesson-audio">
-        <div class="la-label">🎧 The spoken lesson — clean studio voice, steady calm pace. Keyed on the last letter: the dog R-uns (der), caught in a N-et (den), handed to hi-M (dem), the dog’-S (des) — then a lazy cat (die/die/der/der) and the bossy-word chants. The music adapts — phone = chilled bed (sleepy ambient late at night), desktop = Ibiza work-flow by day; tap 🎵 to change. Hit ▶︎ Play above (the cards light in time) or use this bar.</div>
-        <audio controls preload="none" src="learn-voice.mp3" style="width:100%;margin-top:8px"></audio>
-        <audio id="bedAudio" loop preload="none"></audio>
-        <a class="chant-chip" href="learn-de.mp3" download="fallmeister-german-lesson.mp3" style="display:inline-block;margin-top:10px">⬇︎ Download (voice + jazz, offline)</a>
-      </div>
+      <details class="preps-details"><summary>Bossy little words — they pick the case for you (optional)</summary>
+        <div class="preps-wrap">${prepHTML()}</div>
+      </details>
     </div>`;
-  // Wire the single <audio> element: keep the big Play button + native bar in sync,
-  // run the cue-driven card highlighter for either, and recover if streaming stalls.
-  const la=document.querySelector('.lesson-audio audio');
-  if(la){
-    la.addEventListener('play', ()=>{
-      chant.on=true; loadCues(); startBedLayer();
-      if(!chant._cueTimer) chant._cueTimer=setInterval(()=>tickCues(la),150);
-      const pb=document.getElementById('chantPlay'); if(pb) pb.textContent='⏸ Pause';
-      // streaming-stall fallback: fetch whole file + play the blob
-      setTimeout(async ()=>{
-        if(!la._blob && la.currentTime===0 && la.readyState<2){
-          try{ const r=await fetch('learn-de.mp3?b='+Date.now(),{cache:'force-cache'}); const b=await r.blob();
-            la._blob=true; la.src=URL.createObjectURL(b); la.load(); await la.play();
-          }catch(e){}
-        }
-      }, 2500);
-    });
-    la.addEventListener('pause', ()=>{ stopBedLayer(); const pb=document.getElementById('chantPlay'); if(pb && !chant._fadeTimer) pb.textContent='▶︎ Play'; });
-    la.addEventListener('ended', ()=>{ if(!la.loop) stopChant(); });
-  }
+  wireLessonAudio();
   if(typeof updateVibeChip==='function') updateVibeChip();
+}
+function setPlayBtn(playing){
+  const b=document.getElementById('chantPlay'); if(!b) return;
+  b.classList.toggle('playing', playing);
+  const ic=b.querySelector('.bp-ic'), tx=b.querySelector('.bp-tx');
+  if(ic) ic.textContent = playing ? '⏸' : '▶';
+  if(tx) tx.textContent = playing ? 'Pause' : 'Play the lesson';
+}
+function seekChant(e){ const a=lessonAudioEl(); const w=document.getElementById('progWrap'); if(!a||!a.duration||!w) return; const r=w.getBoundingClientRect(); a.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*a.duration; }
+function wireLessonAudio(){
+  const la=lessonAudioEl(); if(!la) return;
+  la.addEventListener('play', ()=>{
+    chant.on=true; loadCues(); startBedLayer();
+    if(!chant._cueTimer) chant._cueTimer=setInterval(()=>tickCues(la),120);
+    setPlayBtn(true);
+    // streaming-stall fallback: fetch the whole file and play the blob
+    setTimeout(async ()=>{
+      if(!la._blob && la.currentTime===0 && la.readyState<2){
+        try{ const r=await fetch('learn-de.mp3?b='+Date.now(),{cache:'force-cache'}); const b=await r.blob();
+          la._blob=true; la.src=URL.createObjectURL(b); la.load(); await la.play();
+        }catch(e){}
+      }
+    }, 2500);
+  });
+  la.addEventListener('pause', ()=>{ stopBedLayer(); if(!chant._fadeTimer) setPlayBtn(false); });
+  la.addEventListener('ended', ()=>{ if(!la.loop) stopChant(); });
 }
 function toggleChantVoice(){ chant.voiceWanted = chant.voiceWanted===false; const c=document.getElementById('chantVoiceChip'); if(c) c.classList.toggle('on', chant.voiceWanted!==false); }
 function toggleChantBeat(){ chant.beatDrums = chant.beatDrums===false; const c=document.getElementById('chantBeatChip'); if(c) c.classList.toggle('on', chant.beatDrums!==false); }
@@ -1503,16 +1528,18 @@ const TEACHING=[
 ];
 // ---- Unified playback: ONE premium MP3, cards highlight from a timestamp map (cues.json) ----
 let CUES=null;
-function lessonAudioEl(){ return document.querySelector('.lesson-audio audio'); }
+function lessonAudioEl(){ return document.getElementById('lessonAudio'); }
 function loadCues(){ if(CUES) return Promise.resolve(CUES); return fetch('cues.json',{cache:'no-cache'}).then(r=>r.json()).then(c=>{CUES=c;return c;}).catch(()=>{CUES=[];return CUES;}); }
 function tickCues(a){
+  if(!a) return;
+  const t=a.currentTime||0, d=a.duration||0;
+  const pf=document.getElementById('progFill'); if(pf && d) pf.style.width=(100*t/d)+'%';
   if(!chant.on || !CUES || !CUES.length) return;
-  const t=a.currentTime; let idx=-1;
-  for(let i=0;i<CUES.length;i++){ if(CUES[i].t<=t) idx=i; else break; }
+  let idx=-1; for(let i=0;i<CUES.length;i++){ if(CUES[i].t<=t) idx=i; else break; }
   if(idx!==chant._lastCue){
     chant._lastCue=idx; const c=idx>=0?CUES[idx]:null;
     if(typeof highlight==='function') highlight(c?c.hi:[]);
-    const now=document.getElementById('chantNow'); if(now) now.textContent=c?(c.now||''):'—';
+    const now=document.getElementById('chantNow'); if(now && c && c.now) now.textContent=c.now;
   }
 }
 function fadeAudioOut(a,secs){ if(!a) return; const steps=24,dt=secs*1000/steps,v0=a.volume; const id=setInterval(()=>{ a.volume=Math.max(0,a.volume-v0/steps); if(a.volume<=0) clearInterval(id); },dt); }
@@ -1558,14 +1585,10 @@ function cycleBed(){
 }
 function playChant(){
   const a=lessonAudioEl(); if(!a) return;
-  chant.on=true; chant._lastCue=-2;
+  chant._lastCue=-2;
   const sel=document.getElementById('chantSleep'); const mins=sel?(parseInt(sel.value)||0):0;
   chant.sleepUntil = mins>0 ? Date.now()+mins*60000 : 0;
   a.loop = chant.sleepUntil>0; a.volume=1;
-  loadCues().then(()=>{ const p=a.play(); if(p&&p.catch) p.catch(()=>{}); });
-  startBedLayer();
-  if(chant._cueTimer) clearInterval(chant._cueTimer);
-  chant._cueTimer=setInterval(()=>tickCues(a),150);
   if(chant._sleepTimer) clearTimeout(chant._sleepTimer);
   if(chant._fadeTimer) clearTimeout(chant._fadeTimer);
   if(chant.sleepUntil){
@@ -1573,6 +1596,7 @@ function playChant(){
     chant._fadeTimer=setTimeout(()=>{ fadeAudioOut(a,8); fadeAudioOut(bedEl(),8); }, Math.max(0,ms-8000));
     chant._sleepTimer=setTimeout(()=>stopChant(), ms+300);
   }
+  loadCues().then(()=>{ const p=a.play(); if(p&&p.catch) p.catch(()=>{}); });  // 'play' event wires cues + bed + button
 }
 function runScript(){
   if(!chant.on) return;
@@ -1711,9 +1735,10 @@ function stopChant(){
   if(chant.timer) clearTimeout(chant.timer);
   try{ speechSynthesis.cancel(); }catch(e){}
   if(typeof stopBed==='function'){ try{ stopBed(); }catch(e){} }
-  const pb=document.getElementById('chantPlay'); if(pb) pb.textContent='▶︎ Play';
+  if(typeof setPlayBtn==='function') setPlayBtn(false);
   if(typeof clearLit==='function') clearLit();
-  const now=document.getElementById('chantNow'); if(now) now.textContent='—';
+  const pf=document.getElementById('progFill'); if(pf) pf.style.width='0%';
+  const now=document.getElementById('chantNow'); if(now) now.textContent='der · den · dem · des — the cards light up as you listen';
 }
 
 // ============================================================
