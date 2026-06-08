@@ -407,6 +407,13 @@ body {
 .hookcard .hk-line { font-size:10px; color:var(--text-dim); text-align:center; line-height:1.25; }
 .hookcard.lit { background:rgba(167,139,250,.2); transform:scale(1.06); }
 .hookcard.lit .hk-big { color:var(--accent); }
+.preps-wrap { margin-top:12px; display:flex; flex-direction:column; gap:7px; }
+.preprow { background:var(--surface2); border-radius:10px; padding:9px 12px; text-align:left; transition:background .2s, transform .2s; }
+.preprow .pp-lab { display:block; font-size:9px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-dim); font-weight:800; margin-bottom:2px; }
+.preprow .pp-list { font-size:14px; font-weight:700; color:var(--text-mid); }
+.preprow.lit { background:rgba(167,139,250,.18); transform:scale(1.02); }
+.preprow.lit .pp-lab { color:var(--accent); }
+.preprow.lit .pp-list { color:var(--text); }
 .chant-chip { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); border-radius:99px; padding:13px 16px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; }
 .chant-chip.on { background:rgba(167,139,250,.18); border-color:var(--accent); color:var(--accent); }
 .chant-body.calm .spine-wrap, .chant-body.calm .hooks-row { opacity:0.5; transition:opacity .4s; }
@@ -1346,6 +1353,14 @@ function spineHTML(){
 function hooksHTML(){
   return HOOKCARDS.map(h=>`<div class="hookcard" id="${h.id}"><span class="hk-emoji">${h.emoji}</span><span class="hk-big">${h.big}</span><span class="hk-line">${h.line}</span></div>`).join('');
 }
+const PREPSETS=[
+  {id:'pp-akk', lab:'Akkusativ — always', list:'durch · für · gegen · ohne · um', de:'durch, für, gegen, ohne, um', eng:'these always take the accusative'},
+  {id:'pp-dat', lab:'Dativ — always', list:'aus · bei · mit · nach · seit · von · zu', de:'aus, bei, mit, nach, seit, von, zu', eng:'these always take the dative'},
+  {id:'pp-two', lab:'Two-way · Wohin?→Akk · Wo?→Dativ', list:'in · an · auf · über · unter · vor · hinter · neben · zwischen', de:'in, an, auf, über, unter, vor, hinter, neben, zwischen', eng:'two-way — moving takes accusative, resting takes dative'},
+];
+function prepHTML(){
+  return PREPSETS.map(p=>`<div class="preprow" id="${p.id}"><span class="pp-lab">${p.lab}</span><span class="pp-list">${p.list}</span></div>`).join('');
+}
 function renderChant(){
   const m=chant.mode;
   document.getElementById('chantScreen').innerHTML=`
@@ -1361,6 +1376,7 @@ function renderChant(){
       <div class="chant-sub">${m==='active'?'Sing the spines, grab the hooks — der·den·dem·des to a tune.':'A warm lo-fi bed — soft chords, a slow beat, vinyl crackle. Whisper the rules in, set a timer, and drift off.'}</div>
       <div class="spine-wrap">${spineHTML()}</div>
       <div class="hooks-row">${hooksHTML()}</div>
+      <div class="preps-wrap">${prepHTML()}</div>
       <div class="chant-now" id="chantNow">—</div>
       <div class="chant-controls">
         <button class="chant-play" id="chantPlay" onclick="toggleChant()">▶︎ Play</button>
@@ -1386,7 +1402,7 @@ function playNote(freq,dur){ dur=dur||0.45;
     o.start(t); o.stop(t+dur+0.03);
   }catch(e){}
 }
-function clearLit(){ document.querySelectorAll('.sp-w.lit,.hookcard.lit').forEach(e=>e.classList.remove('lit')); }
+function clearLit(){ document.querySelectorAll('.sp-w.lit,.hookcard.lit,.preprow.lit').forEach(e=>e.classList.remove('lit')); }
 function litWord(id){ clearLit(); const e=document.getElementById(id); if(e)e.classList.add('lit'); }
 function litHook(id){ clearLit(); const e=document.getElementById(id); if(e)e.classList.add('lit'); }
 
@@ -1405,6 +1421,8 @@ function buildBeats(){
   const hookDe=['den','dem','des'];
   const hookEng=['Hit the man — der becomes den. Only he changes.','Give it to dem — like “them”. That\'s the Dative.','Whose? des — like apostrophe S. That\'s the Genitive.'];
   HOOKCARDS.forEach((h,i)=> beats.push({kind:'hook', id:h.id, de:hookDe[i], note:hookNotes[i], now:h.big+' — '+h.line, eng:hookEng[i], ms: imm?2700:1250}) );
+  const ppNote=[NOTE.E4,NOTE.D4,NOTE.C4];
+  PREPSETS.forEach((p,i)=> beats.push({kind:'prep', id:p.id, de:p.de, eng:p.eng, note:ppNote[i], now:p.list, ms: imm?3200:1900}) );
   beats.push({kind:'gap', ms: imm?2200:650});
   return beats;
 }
@@ -1429,6 +1447,7 @@ function runBeat(){
   const now=document.getElementById('chantNow');
   if(b.kind==='word'){ litWord(b.id); if(now)now.textContent=b.w; playNote(b.note, chant.mode==='immersion'?0.55:0.38); chantSpeakSeq([{t:b.w,lang:'de-DE',rate:chant.mode==='immersion'?0.85:1.0}]); }
   else if(b.kind==='hook'){ litHook(b.id); if(now)now.textContent=b.now; playNote(b.note,0.6); const seq=[{t:b.de,lang:'de-DE',rate:0.9}]; if(chant.mode==='immersion') seq.push({t:b.eng,lang:'en-GB',rate:0.95}); chantSpeakSeq(seq); }
+  else if(b.kind==='prep'){ clearLit(); const e=document.getElementById(b.id); if(e)e.classList.add('lit'); if(now)now.textContent=b.now; playNote(b.note,0.5); chantSpeakSeq([{t:b.de,lang:'de-DE',rate:0.95}]); }
   else if(b.kind==='say'){ clearLit(); if(now)now.textContent=b.now; if(chant.mode==='immersion') chantSpeakSeq([{t:b.text,lang:'en-GB',rate:0.95}]); }
   chant.bi++;
   chant.timer=setTimeout(runBeat, b.ms);
@@ -1513,6 +1532,11 @@ const SLEEP_LINES=[
   {t:'des… like apostrophe S. The genitive.', lang:'en-GB', hi:['n3']},
   {t:'das, das, dem, des', lang:'de-DE', hi:['n0','n1','n2','n3']},
   {t:'den… only the man changes. The accusative.', lang:'en-GB', hi:['m1']},
+  {t:'durch, für, gegen, ohne, um', lang:'de-DE', hi:['pp-akk']},
+  {t:'…always accusative.', lang:'en-GB', hi:['pp-akk']},
+  {t:'aus, bei, mit, nach, seit, von, zu', lang:'de-DE', hi:['pp-dat']},
+  {t:'…always dative.', lang:'en-GB', hi:['pp-dat']},
+  {t:'in, an, auf, über, unter, vor… moving is accusative, resting is dative.', lang:'de-DE', hi:['pp-two']},
 ];
 function runSleep(){
   if(!chant.on) return;
@@ -1556,16 +1580,16 @@ const PLAN_STEPS=[
 ];
 function ensurePlan(){ const t=new Date().toISOString().slice(0,10); if(!state.plan||state.plan.date!==t){ state.plan={date:t, steps:{}}; save(); } }
 function renderPlanCard(){
-  ensurePlan();
   const el=document.getElementById('planCard'); if(!el) return;
-  const done=PLAN_STEPS.filter(s=>state.plan.steps[s.key]).length, total=PLAN_STEPS.length, allDone=done===total;
+  const t=new Date().toISOString().slice(0,10), doneToday=state.lastDone===t;
   el.innerHTML=`<div class="plan-card">
-    <div class="pc-top"><span class="pc-title">🎯 Today’s session</span><span class="pc-streak">🔥 ${state.streak||0}</span></div>
-    <div class="pc-sub">${allDone?'Done for today — nice work. Free practice is below anytime.':'~7 min: warm-up → drills → say it. This is the daily planter.'}</div>
-    <button class="pc-cta ${allDone?'done':''}" onclick="startPlan()">${allDone?'✓ Completed — go again':(done?`Continue session (${done}/${total}) →`:'Start today’s session →')}</button>
-    <div class="pc-dots">${PLAN_STEPS.map(s=>`<span class="pc-dot ${state.plan.steps[s.key]?'on':''}"></span>`).join('')}</div>
+    <div class="pc-top"><span class="pc-title">🌙 Nightly Loop</span><span class="pc-streak">🔥 ${state.streak||0} ${(state.streak===1?'night':'nights')}</span></div>
+    <div class="pc-sub">The whole system in one loop — the spines, the sound-bridges, every preposition. ${doneToday?'Done tonight ✓ — play it again anytime.':'Hit play and blast it. Every night for a month.'}</div>
+    <button class="pc-cta" onclick="startNightly()">▶︎ Play the loop →</button>
   </div>`;
 }
+function markNight(){ const t=new Date().toISOString().slice(0,10); if(state.lastDone!==t){ const y=new Date(Date.now()-DAY).toISOString().slice(0,10); state.streak=(state.lastDone===y?(state.streak||0)+1:1); state.lastDone=t; save(); } }
+function startNightly(){ clearDrill(); markNight(); chant.mode='sleep'; show('chantScreen'); renderChant(); }
 function startPlan(){ ensurePlan(); planActive=true; renderPlanScreen(); }
 function maybeCompleteDay(){
   const t=new Date().toISOString().slice(0,10);
