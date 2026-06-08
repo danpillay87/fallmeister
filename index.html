@@ -419,7 +419,9 @@ body {
 .dog-stage .spk { transform-box:fill-box; transform-origin:50% 50%; }
 #dog { transform-box:fill-box; transform-origin:50% 86%; animation:dogBob 2.6s ease-in-out infinite; }
 #tail { transform-box:fill-box; transform-origin:0% 50%; animation:dogWag .85s ease-in-out infinite; }
-#earL,#earR { transform-box:fill-box; transform-origin:50% 8%; animation:earSway 2.6s ease-in-out infinite; }
+#earL,#earR { transform-box:fill-box; transform-origin:50% 82%; animation:earSway 2.6s ease-in-out infinite; }
+.dog-stage .eyes { transform-box:fill-box; transform-origin:50% 50%; animation:blink 4.4s infinite; }
+@keyframes blink { 0%,93%,100%{transform:scaleY(1)} 96%{transform:scaleY(.12)} }
 .leg { transform-box:fill-box; transform-origin:50% 4%; }
 #tongue { opacity:0; }
 @keyframes dogBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
@@ -1474,39 +1476,37 @@ function prepHTML(){
 // · catches a bone (dem) · sits proud with his bone (des). Pure SVG+CSS, no deps, works offline.
 function dogSVG(){ return `
 <svg class="dog" viewBox="0 0 220 172" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <ellipse class="shadow" cx="110" cy="158" rx="60" ry="9"/>
-  <g class="prop speed"><line x1="4" y1="74" x2="44" y2="74"/><line x1="0" y1="96" x2="40" y2="96"/><line x1="8" y1="118" x2="42" y2="118"/></g>
+  <ellipse class="shadow" cx="110" cy="162" rx="46" ry="8"/>
+  <g class="prop speed"><line x1="2" y1="64" x2="40" y2="64"/><line x1="-2" y1="86" x2="36" y2="86"/><line x1="6" y1="108" x2="38" y2="108"/></g>
   <g id="dog">
-    <path id="tail" d="M163 100 q36 -6 32 -36 q-2 24 -30 24 z" fill="#C8854A"/>
-    <rect class="leg" id="legBL" x="80" y="122" width="16" height="32" rx="8" fill="#C8854A"/>
-    <rect class="leg" id="legBR" x="120" y="122" width="16" height="32" rx="8" fill="#C8854A"/>
-    <ellipse cx="110" cy="106" rx="58" ry="40" fill="#E8B074"/>
-    <ellipse cx="110" cy="118" rx="40" ry="26" fill="#F6E0BE"/>
-    <rect class="leg" id="legFL" x="92" y="126" width="16" height="32" rx="8" fill="#E8B074"/>
-    <rect class="leg" id="legFR" x="114" y="126" width="16" height="32" rx="8" fill="#E8B074"/>
+    <path id="tail" d="M148 132 q26 -2 30 -24 q2 20 -26 18 z" fill="#E8C593"/>
+    <ellipse cx="110" cy="150" rx="34" ry="22" fill="#F4DDB8"/>
+    <rect class="paw" x="86" y="150" width="14" height="18" rx="7" fill="#F4DDB8"/><rect class="paw" x="120" y="150" width="14" height="18" rx="7" fill="#F4DDB8"/>
     <g id="head">
-      <ellipse id="earL" cx="70" cy="56" rx="15" ry="26" fill="#C8854A"/>
-      <ellipse id="earR" cx="150" cy="56" rx="15" ry="26" fill="#C8854A"/>
-      <circle cx="110" cy="62" r="44" fill="#E8B074"/>
-      <ellipse cx="110" cy="84" rx="25" ry="19" fill="#F6E0BE"/>
-      <circle cx="93" cy="54" r="9" fill="#fff"/><circle class="eye" cx="95" cy="56" r="5" fill="#2E2622"/>
-      <circle cx="127" cy="54" r="9" fill="#fff"/><circle class="eye" cx="125" cy="56" r="5" fill="#2E2622"/>
-      <ellipse cx="110" cy="76" rx="9" ry="7" fill="#2E2622"/>
-      <path class="mouth" d="M110 82 q-9 11 -19 3 M110 82 q9 11 19 3" stroke="#2E2622" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <path id="tongue" d="M103 88 q7 13 14 0 z" fill="#F08D8D"/>
+      <path class="ear" id="earL" d="M72 30 l20 30 l-34 9 z" fill="#E8C593"/>
+      <path class="ear" id="earR" d="M148 30 l-20 30 l34 9 z" fill="#E8C593"/>
+      <circle cx="110" cy="78" r="56" fill="#F4DDB8"/>
+      <circle cx="78" cy="100" r="9" fill="#F6AEB9" opacity=".85"/><circle cx="142" cy="100" r="9" fill="#F6AEB9" opacity=".85"/>
+      <g class="eyes">
+        <circle cx="87" cy="76" r="13" fill="#2c241c"/><circle cx="92" cy="71" r="5" fill="#fff"/><circle cx="83" cy="82" r="2.4" fill="#fff"/>
+        <circle cx="133" cy="76" r="13" fill="#2c241c"/><circle cx="138" cy="71" r="5" fill="#fff"/><circle cx="129" cy="82" r="2.4" fill="#fff"/>
+      </g>
+      <ellipse cx="110" cy="95" rx="7" ry="5.5" fill="#2c241c"/>
+      <path class="mouth" d="M110 100 q-8 9 -15 2 M110 100 q8 9 15 2" stroke="#2c241c" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+      <path id="tongue" d="M104 103 q6 10 12 0 z" fill="#F08D8D"/>
     </g>
   </g>
-  <g class="prop net"><path d="M48 18 L172 142 M88 18 L172 102 M128 18 L172 62 M172 18 L48 142 M172 62 L88 142 M172 102 L128 142 M40 50 L150 160 M40 92 L108 160" stroke="#aab3c2" stroke-width="2" fill="none"/></g>
-  <g class="prop bone" transform="translate(150 100) rotate(18)">
+  <g class="prop net"><path d="M48 18 L172 150 M88 18 L172 110 M128 18 L172 70 M172 18 L48 150 M172 70 L88 150 M172 110 L128 150 M40 54 L150 164 M40 98 L108 164" stroke="#aab3c2" stroke-width="2" fill="none"/></g>
+  <g class="prop bone" transform="translate(110 130) rotate(8)">
     <rect x="-17" y="-5" width="34" height="10" rx="5" fill="#F4ECDD" stroke="#cbb98f" stroke-width="1.5"/>
     <circle cx="-17" cy="-6" r="5.5" fill="#F4ECDD" stroke="#cbb98f" stroke-width="1.5"/><circle cx="-17" cy="6" r="5.5" fill="#F4ECDD" stroke="#cbb98f" stroke-width="1.5"/>
     <circle cx="17" cy="-6" r="5.5" fill="#F4ECDD" stroke="#cbb98f" stroke-width="1.5"/><circle cx="17" cy="6" r="5.5" fill="#F4ECDD" stroke="#cbb98f" stroke-width="1.5"/>
   </g>
-  <path class="prop heart" d="M150 36 q6 -10 16 -4 q10 7 -16 24 q-26 -17 -16 -24 q10 -6 16 4 z" fill="#F06D8D"/>
+  <path class="prop heart" d="M110 24 q6 -10 16 -4 q10 7 -16 24 q-26 -17 -16 -24 q10 -6 16 4 z" fill="#F06D8D"/>
   <g class="prop sparkles" fill="#FFD466">
-    <path class="spk s1" d="M42 42 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 z"/>
-    <path class="spk s2" d="M182 52 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 l6 -2.5 z"/>
-    <path class="spk s3" d="M168 124 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 l6 -2.5 z"/>
+    <path class="spk s1" d="M40 44 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 z"/>
+    <path class="spk s2" d="M182 54 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 l6 -2.5 z"/>
+    <path class="spk s3" d="M172 122 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 l6 -2.5 z"/>
   </g>
 </svg>`; }
 function dogStageEl(){ return document.getElementById('dogStage'); }
