@@ -1354,21 +1354,21 @@ const SPINES=[
 ];
 // One dog, one connected story — the trick for each case is part of his day.
 const HOOKCARDS=[
-  {id:'hk0', emoji:'🚪', big:'der', line:'out the DOOR — the DOER'},
-  {id:'hk1', emoji:'🕳️', big:'den', line:'into his DEN — done-to'},
-  {id:'hk2', emoji:'🤲', big:'dem', line:'hand the bone to ’em — give-to'},
+  {id:'hk0', emoji:'🚪', big:'der', line:'out the DOOR — he’s DOING it'},
+  {id:'hk1', emoji:'🕳️', big:'den', line:'into his DEN — it happens to him'},
+  {id:'hk2', emoji:'🤲', big:'dem', line:'a bone to ’em — he GETS it'},
   {id:'hk3', emoji:'🐾', big:'des', line:'the dog’sss — it’s HIS'},
 ];
 // an0-3 = the dog (masc), an4-7 = the cat (fem, the lazy one)
 const ANCHORS=[
-  {grp:'dog', de:'<b>der</b> Hund läuft', tag:'doer', en:'the dog runs (out the door)'},
-  {grp:'dog', de:'ich sehe <b>den</b> Hund', tag:'done-to', en:'I see the dog (in his den)'},
-  {grp:'dog', de:'ich gebe <b>dem</b> Hund einen Knochen', tag:'give-to', en:'I give the dog a bone'},
-  {grp:'dog', de:'der Knochen <b>des</b> Hundes', tag:'his', en:'the dog’s bone'},
-  {grp:'cat', de:'<b>die</b> Katze schläft', tag:'doer', en:'the cat sleeps'},
-  {grp:'cat', de:'ich sehe <b>die</b> Katze', tag:'done-to', en:'I see the cat — still die!'},
-  {grp:'cat', de:'ich gebe <b>der</b> Katze Milch', tag:'give-to', en:'I give the cat milk — now der'},
-  {grp:'cat', de:'<b>die</b> Schüssel <b>der</b> Katze', tag:'hers', en:'the cat’s bowl'},
+  {grp:'dog', de:'<b>der</b> Hund läuft', tag:'he’s doing it', en:'the dog runs (out the door)'},
+  {grp:'dog', de:'ich sehe <b>den</b> Hund', tag:'it happens to him', en:'I see the dog (in his den)'},
+  {grp:'dog', de:'ich gebe <b>dem</b> Hund einen Knochen', tag:'he gets something', en:'I give the dog a bone'},
+  {grp:'dog', de:'der Knochen <b>des</b> Hundes', tag:'it’s his', en:'the dog’s bone'},
+  {grp:'cat', de:'<b>die</b> Katze schläft', tag:'she’s doing it', en:'the cat sleeps'},
+  {grp:'cat', de:'ich sehe <b>die</b> Katze', tag:'it happens to her', en:'I see the cat — still die!'},
+  {grp:'cat', de:'ich gebe <b>der</b> Katze Milch', tag:'she gets something', en:'I give the cat milk — now der'},
+  {grp:'cat', de:'<b>die</b> Schüssel <b>der</b> Katze', tag:'it’s hers', en:'the cat’s bowl'},
 ];
 function anchorsHTML(){
   const card=(a,i)=>`<div class="anchor" id="an${i}"><div class="an-de">${a.de}</div><div class="an-sub"><b>${a.tag}</b> · ${a.en}</div></div>`;
@@ -1382,16 +1382,16 @@ function anchorsHTML(){
 function spineHTML(){
   let h='<div class="spine-head"><span></span><span>Nom</span><span>Akk</span><span>Dat</span><span>Gen</span></div>';
   for(const s of SPINES){ h+=`<div class="spine ${s.cls}"><span class="sp-lab">${s.emoji}</span>`+s.words.map((w,i)=>`<span class="sp-w" id="${s.pre}${i}">${w}</span>`).join('')+`</div>`; }
-  h+=`<div class="spine-note"><b>The dog (der) changes all four.</b> The cat (die) is lazy — only give-to & hers flip her to der.</div>`;
+  h+=`<div class="spine-note"><b>The dog (der) changes all four.</b> The cat (die) is lazy — she only changes when she gets something, or it’s hers.</div>`;
   return h;
 }
 function hooksHTML(){
   return HOOKCARDS.map(h=>`<div class="hookcard" id="${h.id}"><span class="hk-emoji">${h.emoji}</span><span class="hk-big">${h.big}</span><span class="hk-line">${h.line}</span></div>`).join('');
 }
 const PREPSETS=[
-  {id:'pp-akk', lab:'Bossy words → DONE-TO (den)', list:'durch · für · gegen · ohne · um', de:'durch, für, gegen, ohne, um', eng:'these always make it done-to'},
-  {id:'pp-dat', lab:'Bossy words → GIVE-TO (dem)', list:'aus · bei · mit · nach · seit · von · zu', de:'aus, bei, mit, nach, seit, von, zu', eng:'these always make it give-to'},
-  {id:'pp-two', lab:'Depends — moving→done-to · staying→give-to', list:'in · an · auf · über · unter · vor · hinter · neben · zwischen', de:'in, an, auf, über, unter, vor, hinter, neben, zwischen', eng:'these depend on moving or staying'},
+  {id:'pp-akk', lab:'Bossy words → always den', list:'durch · für · gegen · ohne · um', de:'durch, für, gegen, ohne, um', eng:'after these it’s always den'},
+  {id:'pp-dat', lab:'Bossy words → always dem', list:'aus · bei · mit · nach · seit · von · zu', de:'aus, bei, mit, nach, seit, von, zu', eng:'after these it’s always dem'},
+  {id:'pp-two', lab:'Depends — moving → den · staying → dem', list:'in · an · auf · über · unter · vor · hinter · neben · zwischen', de:'in, an, auf, über, unter, vor, hinter, neben, zwischen', eng:'moving there → den, sitting there → dem'},
 ];
 function prepHTML(){
   return PREPSETS.map(p=>`<div class="preprow" id="${p.id}"><span class="pp-lab">${p.lab}</span><span class="pp-list">${p.list}</span></div>`).join('');
