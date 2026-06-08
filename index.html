@@ -364,12 +364,12 @@ body {
 .toggle.on::after { transform:translateX(20px); }
 
 /* ---- CHANT / IMMERSION ---- */
-#chantScreen { padding:8px 20px 24px; overflow-y:auto; }
-.chant-modes { display:flex; gap:8px; }
-.chant-mode-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); border-radius:99px; padding:8px 16px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; }
-.chant-mode-btn.on { background:var(--accent); color:#fff; border-color:var(--accent); }
-.chant-body { max-width:440px; margin:0 auto; text-align:center; }
-.chant-sub { font-size:13px; color:var(--text-dim); margin:6px 0 16px; line-height:1.5; }
+#loopScreen { padding:8px 20px 24px; overflow-y:auto; }
+.loop-modes { display:flex; gap:8px; }
+.loop-mode-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); border-radius:99px; padding:8px 16px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; }
+.loop-mode-btn.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+.loop-body { max-width:440px; margin:0 auto; text-align:center; }
+.loop-sub { font-size:13px; color:var(--text-dim); margin:6px 0 16px; line-height:1.5; }
 .cgrid-head { display:grid; grid-template-columns:54px repeat(4,1fr); gap:5px; margin-bottom:5px; }
 .cgrid-head span { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); font-weight:700; text-align:center; }
 .crow { display:grid; grid-template-columns:54px repeat(4,1fr); gap:5px; margin-bottom:5px; border-radius:10px; transition:background 0.2s, transform 0.2s; padding:2px; }
@@ -378,20 +378,20 @@ body {
 .crow.lit { background:rgba(167,139,250,0.16); transform:scale(1.02); }
 .crow.lit .cr-lab { color:var(--accent); }
 .crow.lit .cr-art { background:var(--accent); color:#fff; }
-.chant-preps { margin-top:14px; display:flex; flex-direction:column; gap:7px; }
+.loop-preps { margin-top:14px; display:flex; flex-direction:column; gap:7px; }
 .pblock { background:var(--surface2); border-radius:10px; padding:9px 12px; text-align:left; transition:background 0.2s, transform 0.2s; }
 .pblock .pb-lab { display:block; font-size:9.5px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-dim); font-weight:800; margin-bottom:2px; }
 .pblock .pb-list { font-size:15px; font-weight:700; color:var(--text-mid); }
 .pblock.lit { background:rgba(167,139,250,0.16); transform:scale(1.02); }
 .pblock.lit .pb-lab { color:var(--accent); }
 .pblock.lit .pb-list { color:var(--text); }
-.chant-now { margin-top:14px; min-height:24px; font-size:16px; font-weight:800; color:var(--accent); }
-.chant-controls { margin-top:14px; display:flex; gap:10px; align-items:center; justify-content:center; }
-.chant-play { background:var(--accent); color:#fff; border:none; border-radius:14px; padding:14px 34px; font-size:17px; font-weight:800; font-family:inherit; cursor:pointer; }
-.chant-play:hover { opacity:.92; }
-.chant-sel { background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:12px; padding:13px 14px; font-size:14px; font-family:inherit; font-weight:600; }
+.loop-now { margin-top:14px; min-height:24px; font-size:16px; font-weight:800; color:var(--accent); }
+.loop-controls { margin-top:14px; display:flex; gap:10px; align-items:center; justify-content:center; }
+.loop-play { background:var(--accent); color:#fff; border:none; border-radius:14px; padding:14px 34px; font-size:17px; font-weight:800; font-family:inherit; cursor:pointer; }
+.loop-play:hover { opacity:.92; }
+.loop-sel { background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:12px; padding:13px 14px; font-size:14px; font-family:inherit; font-weight:600; }
 /* streamlined player */
-.chant-title { font-size:14px; font-weight:800; color:var(--text-mid); }
+.loop-title { font-size:14px; font-weight:800; color:var(--text-mid); }
 .player { max-width:440px; margin:2px auto 20px; }
 .bigplay { width:100%; display:flex; align-items:center; justify-content:center; gap:10px; background:var(--accent); color:#fff; border:none; border-radius:16px; padding:18px; font-size:18px; font-weight:800; font-family:inherit; cursor:pointer; transition:background .2s, transform .08s, box-shadow .2s; }
 .bigplay:active { transform:scale(.99); }
@@ -436,7 +436,7 @@ body {
 .anchor .an-sub b { color:var(--accent); text-transform:uppercase; letter-spacing:.4px; font-size:9.5px; font-weight:800; }
 .anchor.lit { background:rgba(167,139,250,.2); transform:scale(1.02); transition:transform .2s, background .2s; }
 .anchor.lit .an-de { color:var(--text); }
-.chant-body.calm .anchors-wrap { opacity:0.5; transition:opacity .4s; }
+.loop-body.calm .anchors-wrap { opacity:0.5; transition:opacity .4s; }
 .preps-wrap { margin-top:12px; display:flex; flex-direction:column; gap:7px; }
 .preprow { background:var(--surface2); border-radius:10px; padding:9px 12px; text-align:left; transition:background .2s, transform .2s; }
 .preprow .pp-lab { display:block; font-size:9px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-dim); font-weight:800; margin-bottom:2px; }
@@ -447,10 +447,10 @@ body {
 .lesson-audio { margin:18px auto 0; max-width:440px; background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:14px; }
 .lesson-audio .la-label { font-size:12.5px; color:var(--text-mid); line-height:1.5; }
 .lesson-audio audio { filter:invert(0.92) hue-rotate(180deg); border-radius:8px; }
-.chant-chip { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); border-radius:99px; padding:13px 16px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; }
-.chant-chip.on { background:rgba(167,139,250,.18); border-color:var(--accent); color:var(--accent); }
-.chant-body.calm .spine-wrap, .chant-body.calm .hooks-row { opacity:0.5; transition:opacity .4s; }
-.chant-body.calm .spine .sp-w.lit, .chant-body.calm .hookcard.lit { opacity:1; }
+.loop-chip { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); border-radius:99px; padding:13px 16px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; }
+.loop-chip.on { background:rgba(167,139,250,.18); border-color:var(--accent); color:var(--accent); }
+.loop-body.calm .spine-wrap, .loop-body.calm .hooks-row { opacity:0.5; transition:opacity .4s; }
+.loop-body.calm .spine .sp-w.lit, .loop-body.calm .hookcard.lit { opacity:1; }
 
 /* ---- TODAY'S SESSION (guided loop) ---- */
 .home-free-label { font-size:11px; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); font-weight:700; margin:22px 0 8px; }
@@ -579,9 +579,9 @@ body {
       <div class="mi-icon">🗡️</div>
       <div class="mi-text"><h3>Survival</h3><p>Words fall — type before they drop</p></div>
     </div>
-    <div class="mode-item" onclick="startChant()">
+    <div class="mode-item" onclick="startLoop()">
       <div class="mi-icon">🔁</div>
-      <div class="mi-text"><h3>Chant &amp; Immersion</h3><p>Listen on a loop — burn it into reflex</p></div>
+      <div class="mi-text"><h3>Loop &amp; Immersion</h3><p>Listen on a loop — burn it into reflex</p></div>
     </div>
   </div>
   <div class="home-grid" id="homeGrid"></div>
@@ -612,7 +612,7 @@ body {
   </div>
 </div>
 
-<div class="screen" id="chantScreen"></div>
+<div class="screen" id="loopScreen"></div>
 
 <div class="screen" id="planScreen"></div>
 <div class="screen" id="sayScreen"></div>
@@ -1029,7 +1029,7 @@ function setupSwipe(el,onRight,onLeft) {
 //  DRILL
 // ============================================================
 let drill={};
-function clearDrill() { if(drill.timerInterval)clearInterval(drill.timerInterval); if(drill.keyHandler)document.removeEventListener('keydown',drill.keyHandler); drill={}; if(typeof stopChant==='function') stopChant(); }
+function clearDrill() { if(drill.timerInterval)clearInterval(drill.timerInterval); if(drill.keyHandler)document.removeEventListener('keydown',drill.keyHandler); drill={}; if(typeof stopLoop==='function') stopLoop(); }
 
 function startDrill(type) {
   clearDrill();
@@ -1362,10 +1362,10 @@ goHome=function(){ _goHome(); bootHome(); };
 // ============================================================
 //  CHANT / IMMERSION — audible loop (active) + passive track (immersion)
 // ============================================================
-let chant={on:false, mode:'active', step:0, sleepUntil:0, timer:null};
-let chantAudio={ctx:null, osc:[], gain:null};
+let loop={on:false, mode:'active', step:0, sleepUntil:0, timer:null};
+let loopAudio={ctx:null, osc:[], gain:null};
 
-function startChant(){ clearDrill(); chant.mode='active'; show('chantScreen'); renderChant(); }
+function startLoop(){ clearDrill(); loop.mode='active'; show('loopScreen'); renderLoop(); }
 
 const SPINES=[
   {emoji:'🐕', cls:'sp-m', pre:'m', words:['der','den','dem','des']},
@@ -1374,10 +1374,10 @@ const SPINES=[
 ];
 // One dog, one connected story — the trick for each case is part of his day.
 const HOOKCARDS=[
-  {id:'hk0', emoji:'🏃', big:'de<u>r</u>', line:'ends in R → he RUNS (doing it)'},
-  {id:'hk1', emoji:'🕸️', big:'de<u>n</u>', line:'ends in N → caught in a NET (happens to him)'},
-  {id:'hk2', emoji:'🤲', big:'de<u>m</u>', line:'ends in M → to hiM / ’em (he gets it)'},
-  {id:'hk3', emoji:'🐾', big:'de<u>s</u>', line:'ends in S → the dog’S (it’s his)'},
+  {id:'hk0', emoji:'🏃', big:'de<u>r</u>', line:'R → he RUNS'},
+  {id:'hk1', emoji:'🕸️', big:'de<u>n</u>', line:'N → in a NET'},
+  {id:'hk2', emoji:'🤲', big:'de<u>m</u>', line:'M → to hiM'},
+  {id:'hk3', emoji:'🐾', big:'de<u>s</u>', line:'S → the dog’S'},
 ];
 // an0-3 = the dog (masc), an4-7 = the cat (fem, the lazy one)
 const ANCHORS=[
@@ -1391,18 +1391,18 @@ const ANCHORS=[
   {grp:'cat', de:'<b>die</b> Schüssel <b>der</b> Katze', tag:'it’s hers', en:'the cat’s bowl'},
 ];
 function anchorsHTML(){
-  const card=(a,i)=>`<div class="anchor" id="an${i}"><div class="an-de">${a.de}</div><div class="an-sub"><b>${a.tag}</b> · ${a.en}</div></div>`;
+  const card=(a,i)=>`<div class="anchor" id="an${i}"><div class="an-de">${a.de}</div><div class="an-sub">${a.tag}</div></div>`;
   const dog=ANCHORS.map((a,i)=>[a,i]).filter(([a])=>a.grp==='dog');
   const cat=ANCHORS.map((a,i)=>[a,i]).filter(([a])=>a.grp==='cat');
-  return `<div class="anchors-head">🐕 the dog (der) — one day, four jobs</div>`+
+  return `<div class="anchors-head">🐕 the dog</div>`+
     dog.map(([a,i])=>card(a,i)).join('')+
-    `<div class="anchors-head" style="margin-top:12px">🐱 the cat (die) — the lazy one</div>`+
+    `<div class="anchors-head" style="margin-top:12px">🐱 the cat — lazy</div>`+
     cat.map(([a,i])=>card(a,i)).join('');
 }
 function spineHTML(){
   let h='<div class="spine-head"><span></span><span>Nom</span><span>Akk</span><span>Dat</span><span>Gen</span></div>';
   for(const s of SPINES){ h+=`<div class="spine ${s.cls}"><span class="sp-lab">${s.emoji}</span>`+s.words.map((w,i)=>`<span class="sp-w" id="${s.pre}${i}">${w}</span>`).join('')+`</div>`; }
-  h+=`<div class="spine-note"><b>The dog (der) changes all four.</b> The cat (die) is lazy — she only changes when she gets something, or it’s hers.</div>`;
+  h+=`<div class="spine-note"><b>🐕 changes all four · 🐱 barely moves</b></div>`;
   return h;
 }
 function hooksHTML(){
@@ -1416,21 +1416,21 @@ const PREPSETS=[
 function prepHTML(){
   return PREPSETS.map(p=>`<div class="preprow" id="${p.id}"><span class="pp-lab">${p.lab}</span><span class="pp-list">${p.list}</span></div>`).join('');
 }
-function renderChant(){
-  document.getElementById('chantScreen').innerHTML=`
+function renderLoop(){
+  document.getElementById('loopScreen').innerHTML=`
     <div class="hud">
-      <button class="hud-close" onclick="stopChant();goHome()">✕</button>
-      <div class="chant-title">🌙 Nightly Loop</div>
+      <button class="hud-close" onclick="stopLoop();goHome()">✕</button>
+      <div class="loop-title">🌙 Nightly Loop</div>
       <div style="width:38px"></div>
     </div>
-    <div class="chant-body">
+    <div class="loop-body">
       <div class="player">
-        <button class="bigplay" id="chantPlay" onclick="toggleChant()"><span class="bp-ic">▶</span><span class="bp-tx">Play the lesson</span></button>
-        <div class="prog" id="progWrap" onclick="seekChant(event)"><div class="prog-fill" id="progFill"></div></div>
-        <div class="now" id="chantNow">der · den · dem · des — the cards light up as you listen</div>
+        <button class="bigplay" id="loopPlay" onclick="toggleLoop()"><span class="bp-ic">▶</span><span class="bp-tx">Play the lesson</span></button>
+        <div class="prog" id="progWrap" onclick="seekLoop(event)"><div class="prog-fill" id="progFill"></div></div>
+        <div class="now" id="loopNow">der · den · dem · des — the cards light up as you listen</div>
         <div class="player-row">
           <button class="chip" id="vibeChip" onclick="cycleBed()" title="Music — tap to change">🎵 Auto</button>
-          <select class="chip" id="chantSleep" title="Auto-stop"><option value="0">No timer</option><option value="20">Stop · 20m</option><option value="30" selected>Stop · 30m</option><option value="45">Stop · 45m</option><option value="60">Stop · 60m</option></select>
+          <select class="chip" id="loopSleep" title="Auto-stop"><option value="0">No timer</option><option value="20">Stop · 20m</option><option value="30" selected>Stop · 30m</option><option value="45">Stop · 45m</option><option value="60">Stop · 60m</option></select>
           <a class="chip" href="learn-de.mp3" download="fallmeister-german-lesson.mp3" title="Save for offline">⬇ Save</a>
         </div>
         <audio id="lessonAudio" preload="none" src="learn-voice.mp3"></audio>
@@ -1448,18 +1448,18 @@ function renderChant(){
   if(typeof updateVibeChip==='function') updateVibeChip();
 }
 function setPlayBtn(playing){
-  const b=document.getElementById('chantPlay'); if(!b) return;
+  const b=document.getElementById('loopPlay'); if(!b) return;
   b.classList.toggle('playing', playing);
   const ic=b.querySelector('.bp-ic'), tx=b.querySelector('.bp-tx');
   if(ic) ic.textContent = playing ? '⏸' : '▶';
   if(tx) tx.textContent = playing ? 'Pause' : 'Play the lesson';
 }
-function seekChant(e){ const a=lessonAudioEl(); const w=document.getElementById('progWrap'); if(!a||!a.duration||!w) return; const r=w.getBoundingClientRect(); a.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*a.duration; }
+function seekLoop(e){ const a=lessonAudioEl(); const w=document.getElementById('progWrap'); if(!a||!a.duration||!w) return; const r=w.getBoundingClientRect(); a.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*a.duration; }
 function wireLessonAudio(){
   const la=lessonAudioEl(); if(!la) return;
   la.addEventListener('play', ()=>{
-    chant.on=true; loadCues(); startBedLayer();
-    if(!chant._cueTimer) chant._cueTimer=setInterval(()=>tickCues(la),120);
+    loop.on=true; loadCues(); startBedLayer();
+    if(!loop._cueTimer) loop._cueTimer=setInterval(()=>tickCues(la),120);
     setPlayBtn(true);
     // streaming-stall fallback: fetch the whole file and play the blob
     setTimeout(async ()=>{
@@ -1470,13 +1470,13 @@ function wireLessonAudio(){
       }
     }, 2500);
   });
-  la.addEventListener('pause', ()=>{ stopBedLayer(); if(!chant._fadeTimer) setPlayBtn(false); });
-  la.addEventListener('ended', ()=>{ if(!la.loop) stopChant(); });
+  la.addEventListener('pause', ()=>{ stopBedLayer(); if(!loop._fadeTimer) setPlayBtn(false); });
+  la.addEventListener('ended', ()=>{ if(!la.loop) stopLoop(); });
 }
-function toggleChantVoice(){ chant.voiceWanted = chant.voiceWanted===false; const c=document.getElementById('chantVoiceChip'); if(c) c.classList.toggle('on', chant.voiceWanted!==false); }
-function toggleChantBeat(){ chant.beatDrums = chant.beatDrums===false; const c=document.getElementById('chantBeatChip'); if(c) c.classList.toggle('on', chant.beatDrums!==false); }
-function setChantMode(m){ stopChant(); chant.mode=m; renderChant(); }
-function toggleChant(){ const a=lessonAudioEl(); if(a && !a.paused){ stopChant(); } else { playChant(); } }
+function toggleLoopVoice(){ loop.voiceWanted = loop.voiceWanted===false; const c=document.getElementById('loopVoiceChip'); if(c) c.classList.toggle('on', loop.voiceWanted!==false); }
+function toggleLoopBeat(){ loop.beatDrums = loop.beatDrums===false; const c=document.getElementById('loopBeatChip'); if(c) c.classList.toggle('on', loop.beatDrums!==false); }
+function setLoopMode(m){ stopLoop(); loop.mode=m; renderLoop(); }
+function toggleLoop(){ const a=lessonAudioEl(); if(a && !a.paused){ stopLoop(); } else { playLoop(); } }
 
 const NOTE={C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392.0,A4:440.0,C5:523.25};
 function playNote(freq,dur){ dur=dur||0.45;
@@ -1534,12 +1534,12 @@ function tickCues(a){
   if(!a) return;
   const t=a.currentTime||0, d=a.duration||0;
   const pf=document.getElementById('progFill'); if(pf && d) pf.style.width=(100*t/d)+'%';
-  if(!chant.on || !CUES || !CUES.length) return;
+  if(!loop.on || !CUES || !CUES.length) return;
   let idx=-1; for(let i=0;i<CUES.length;i++){ if(CUES[i].t<=t) idx=i; else break; }
-  if(idx!==chant._lastCue){
-    chant._lastCue=idx; const c=idx>=0?CUES[idx]:null;
+  if(idx!==loop._lastCue){
+    loop._lastCue=idx; const c=idx>=0?CUES[idx]:null;
     if(typeof highlight==='function') highlight(c?c.hi:[]);
-    const now=document.getElementById('chantNow'); if(now && c && c.now) now.textContent=c.now;
+    const now=document.getElementById('loopNow'); if(now && c && c.now) now.textContent=c.now;
   }
 }
 function fadeAudioOut(a,secs){ if(!a) return; const steps=24,dt=secs*1000/steps,v0=a.volume; const id=setInterval(()=>{ a.volume=Math.max(0,a.volume-v0/steps); if(a.volume<=0) clearInterval(id); },dt); }
@@ -1560,7 +1560,7 @@ function autoBed(){
   return {src:'music-focus.mp3',vol:0.11,label:'Focus'};             // desktop day = work-flow Ibiza
 }
 function resolveBed(){
-  const ov=(chant.bedOverride||(typeof state!=='undefined'&&state.bedOverride)||'auto');
+  const ov=(loop.bedOverride||(typeof state!=='undefined'&&state.bedOverride)||'auto');
   if(ov==='auto') return Object.assign(autoBed(),{auto:true});
   const b=BEDS.find(x=>x.key===ov)||BEDS[0];
   return {src:b.key, vol:b.vol||0.11, label:b.label, auto:false};
@@ -1578,52 +1578,52 @@ function updateVibeChip(){
   c.textContent = '🎵 ' + r.label + (r.auto?' · auto':'');
 }
 function cycleBed(){
-  const keys=BEDS.map(b=>b.key); let i=keys.indexOf(chant.bedOverride||'auto'); i=(i+1)%keys.length;
-  chant.bedOverride=keys[i]; try{ if(typeof state!=='undefined'){ state.bedOverride=keys[i]; save(); } }catch(e){}
+  const keys=BEDS.map(b=>b.key); let i=keys.indexOf(loop.bedOverride||'auto'); i=(i+1)%keys.length;
+  loop.bedOverride=keys[i]; try{ if(typeof state!=='undefined'){ state.bedOverride=keys[i]; save(); } }catch(e){}
   updateVibeChip();
   const be=bedEl(); if(be && !be.paused){ const r=resolveBed(); be.setAttribute('src',r.src); be.load(); be.loop=true; be.volume=r.vol; const p=be.play(); if(p&&p.catch) p.catch(()=>{}); }
 }
-function playChant(){
+function playLoop(){
   const a=lessonAudioEl(); if(!a) return;
-  chant._lastCue=-2;
-  const sel=document.getElementById('chantSleep'); const mins=sel?(parseInt(sel.value)||0):0;
-  chant.sleepUntil = mins>0 ? Date.now()+mins*60000 : 0;
-  a.loop = chant.sleepUntil>0; a.volume=1;
-  if(chant._sleepTimer) clearTimeout(chant._sleepTimer);
-  if(chant._fadeTimer) clearTimeout(chant._fadeTimer);
-  if(chant.sleepUntil){
-    const ms=chant.sleepUntil-Date.now();
-    chant._fadeTimer=setTimeout(()=>{ fadeAudioOut(a,8); fadeAudioOut(bedEl(),8); }, Math.max(0,ms-8000));
-    chant._sleepTimer=setTimeout(()=>stopChant(), ms+300);
+  loop._lastCue=-2;
+  const sel=document.getElementById('loopSleep'); const mins=sel?(parseInt(sel.value)||0):0;
+  loop.sleepUntil = mins>0 ? Date.now()+mins*60000 : 0;
+  a.loop = loop.sleepUntil>0; a.volume=1;
+  if(loop._sleepTimer) clearTimeout(loop._sleepTimer);
+  if(loop._fadeTimer) clearTimeout(loop._fadeTimer);
+  if(loop.sleepUntil){
+    const ms=loop.sleepUntil-Date.now();
+    loop._fadeTimer=setTimeout(()=>{ fadeAudioOut(a,8); fadeAudioOut(bedEl(),8); }, Math.max(0,ms-8000));
+    loop._sleepTimer=setTimeout(()=>stopLoop(), ms+300);
   }
   loadCues().then(()=>{ const p=a.play(); if(p&&p.catch) p.catch(()=>{}); });  // 'play' event wires cues + bed + button
 }
 function runScript(){
-  if(!chant.on) return;
-  const sleep=chant.mode==='sleep';
-  if(chant.sleepUntil){
-    const remain=chant.sleepUntil-Date.now();
-    if(remain<=0){ stopChant(); return; }
-    if(remain<30000 && chantAudio.master && chantAudio.ctx){ try{ chantAudio.master.gain.cancelScheduledValues(chantAudio.ctx.currentTime); chantAudio.master.gain.exponentialRampToValueAtTime(0.0001, chantAudio.ctx.currentTime+Math.max(1,remain/1000)); }catch(e){} }
+  if(!loop.on) return;
+  const sleep=loop.mode==='sleep';
+  if(loop.sleepUntil){
+    const remain=loop.sleepUntil-Date.now();
+    if(remain<=0){ stopLoop(); return; }
+    if(remain<30000 && loopAudio.master && loopAudio.ctx){ try{ loopAudio.master.gain.cancelScheduledValues(loopAudio.ctx.currentTime); loopAudio.master.gain.exponentialRampToValueAtTime(0.0001, loopAudio.ctx.currentTime+Math.max(1,remain/1000)); }catch(e){} }
   }
-  const step=TEACHING[chant.bi % TEACHING.length];
+  const step=TEACHING[loop.bi % TEACHING.length];
   highlight(step.hi);
-  const now=document.getElementById('chantNow'); if(now) now.textContent = step.now || step.en || step.de || '';
-  chant.bi++;
-  const voiceOff = sleep && chant.voiceWanted===false;
+  const now=document.getElementById('loopNow'); if(now) now.textContent = step.now || step.en || step.de || '';
+  loop.bi++;
+  const voiceOff = sleep && loop.voiceWanted===false;
   const lines=[];
   if(!voiceOff){
     if(step.en) lines.push({t:step.en, lang:'en-GB', rate: sleep?0.88:1.0});
     if(step.de) lines.push({t:step.de, lang:'de-DE', rate: sleep?0.82:0.9});
   }
-  if(lines.length){ chantSpeakSeq(lines, ()=>{ if(chant.on) chant.timer=setTimeout(runScript, sleep?1300:520); }); }
-  else { chant.timer=setTimeout(runScript, sleep?5500:1400); }
+  if(lines.length){ loopSpeakSeq(lines, ()=>{ if(loop.on) loop.timer=setTimeout(runScript, sleep?1300:520); }); }
+  else { loop.timer=setTimeout(runScript, sleep?5500:1400); }
 }
-function chantSpeakSeq(items, done){
-  if(!('speechSynthesis' in window)){ if(done) chant.timer=setTimeout(done, 1200); return; }
+function loopSpeakSeq(items, done){
+  if(!('speechSynthesis' in window)){ if(done) loop.timer=setTimeout(done, 1200); return; }
   let i=0;
   const next=()=>{
-    if(!chant.on) return;
+    if(!loop.on) return;
     if(i>=items.length){ done&&done(); return; }
     const it=items[i++];
     const u=new SpeechSynthesisUtterance(it.t);
@@ -1643,52 +1643,52 @@ const LOFI_PROG=[
   [196.00,246.94,293.66,349.23], // G7
 ];
 function padNote(ctx,freq,t,dur){
-  const g=ctx.createGain(); g.connect(chantAudio.padBus);
+  const g=ctx.createGain(); g.connect(loopAudio.padBus);
   g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.22,t+0.5); g.gain.setValueAtTime(0.22,t+dur*0.6); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
   [0,-0.4,0.4].forEach((det,i)=>{ const o=ctx.createOscillator(); o.type=i===0?'triangle':'sine'; o.frequency.value=freq; o.detune.value=det*5; o.connect(g); o.start(t); o.stop(t+dur+0.05); });
 }
-function kick(ctx,t){ const o=ctx.createOscillator(),g=ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(120,t); o.frequency.exponentialRampToValueAtTime(45,t+0.12); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.5,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+0.22); o.connect(g); g.connect(chantAudio.drumBus); o.start(t); o.stop(t+0.26); }
-function hat(ctx,t,vol){ const s=ctx.createBufferSource(); s.buffer=chantAudio.noise; const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=7000; const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.12,t+0.005); g.gain.exponentialRampToValueAtTime(0.0001,t+0.05); s.connect(hp); hp.connect(g); g.connect(chantAudio.drumBus); s.start(t); s.stop(t+0.06); }
-function pop(ctx,t){ const s=ctx.createBufferSource(); s.buffer=chantAudio.noise; const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2500; const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.05,t+0.002); g.gain.exponentialRampToValueAtTime(0.0001,t+0.03); s.connect(bp); bp.connect(g); g.connect(chantAudio.master); s.start(t); s.stop(t+0.04); }
+function kick(ctx,t){ const o=ctx.createOscillator(),g=ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(120,t); o.frequency.exponentialRampToValueAtTime(45,t+0.12); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.5,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+0.22); o.connect(g); g.connect(loopAudio.drumBus); o.start(t); o.stop(t+0.26); }
+function hat(ctx,t,vol){ const s=ctx.createBufferSource(); s.buffer=loopAudio.noise; const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=7000; const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.12,t+0.005); g.gain.exponentialRampToValueAtTime(0.0001,t+0.05); s.connect(hp); hp.connect(g); g.connect(loopAudio.drumBus); s.start(t); s.stop(t+0.06); }
+function pop(ctx,t){ const s=ctx.createBufferSource(); s.buffer=loopAudio.noise; const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2500; const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.05,t+0.002); g.gain.exponentialRampToValueAtTime(0.0001,t+0.03); s.connect(bp); bp.connect(g); g.connect(loopAudio.master); s.start(t); s.stop(t+0.04); }
 function startBed(mode){
   try{
     const ctx = actx = actx || new (window.AudioContext||window.webkitAudioContext)();
     if(ctx.state==='suspended') ctx.resume();
     stopBed();
-    chantAudio.nodes=[]; chantAudio.ctx=ctx; chantAudio.noise=noiseBuf(ctx,2);
-    const master=ctx.createGain(); master.gain.value=0.0001; master.connect(ctx.destination); chantAudio.master=master;
+    loopAudio.nodes=[]; loopAudio.ctx=ctx; loopAudio.noise=noiseBuf(ctx,2);
+    const master=ctx.createGain(); master.gain.value=0.0001; master.connect(ctx.destination); loopAudio.master=master;
     if(mode!=='sleep'){ master.gain.value=0.0001; return; } // practice mode plays notes directly
     // pad bus → soft lowpass, gentle tremolo
-    chantAudio.padBus=ctx.createGain(); chantAudio.padBus.gain.value=0.16;
-    const padLp=ctx.createBiquadFilter(); padLp.type='lowpass'; padLp.frequency.value=850; chantAudio.padBus.connect(padLp); padLp.connect(master);
-    const trem=ctx.createOscillator(); trem.type='sine'; trem.frequency.value=0.12; const tremG=ctx.createGain(); tremG.gain.value=0.05; trem.connect(tremG); tremG.connect(chantAudio.padBus.gain); trem.start(); chantAudio.nodes.push(trem);
-    chantAudio.drumBus=ctx.createGain(); chantAudio.drumBus.gain.value=0.5; chantAudio.drumBus.connect(master);
+    loopAudio.padBus=ctx.createGain(); loopAudio.padBus.gain.value=0.16;
+    const padLp=ctx.createBiquadFilter(); padLp.type='lowpass'; padLp.frequency.value=850; loopAudio.padBus.connect(padLp); padLp.connect(master);
+    const trem=ctx.createOscillator(); trem.type='sine'; trem.frequency.value=0.12; const tremG=ctx.createGain(); tremG.gain.value=0.05; trem.connect(tremG); tremG.connect(loopAudio.padBus.gain); trem.start(); loopAudio.nodes.push(trem);
+    loopAudio.drumBus=ctx.createGain(); loopAudio.drumBus.gain.value=0.5; loopAudio.drumBus.connect(master);
     // vinyl crackle (looping hiss + pops) and warm low air
-    const cr=ctx.createBufferSource(); cr.buffer=chantAudio.noise; cr.loop=true; const crhp=ctx.createBiquadFilter(); crhp.type='highpass'; crhp.frequency.value=2000; const crg=ctx.createGain(); crg.gain.value=0.015; cr.connect(crhp); crhp.connect(crg); crg.connect(master); cr.start(); chantAudio.nodes.push(cr);
-    const air=ctx.createBufferSource(); air.buffer=chantAudio.noise; air.loop=true; const airlp=ctx.createBiquadFilter(); airlp.type='lowpass'; airlp.frequency.value=300; const airg=ctx.createGain(); airg.gain.value=0.02; air.connect(airlp); airlp.connect(airg); airg.connect(master); air.start(); chantAudio.nodes.push(air);
-    chant.bar=0; lofiBar();
+    const cr=ctx.createBufferSource(); cr.buffer=loopAudio.noise; cr.loop=true; const crhp=ctx.createBiquadFilter(); crhp.type='highpass'; crhp.frequency.value=2000; const crg=ctx.createGain(); crg.gain.value=0.015; cr.connect(crhp); crhp.connect(crg); crg.connect(master); cr.start(); loopAudio.nodes.push(cr);
+    const air=ctx.createBufferSource(); air.buffer=loopAudio.noise; air.loop=true; const airlp=ctx.createBiquadFilter(); airlp.type='lowpass'; airlp.frequency.value=300; const airg=ctx.createGain(); airg.gain.value=0.02; air.connect(airlp); airlp.connect(airg); airg.connect(master); air.start(); loopAudio.nodes.push(air);
+    loop.bar=0; lofiBar();
     master.gain.exponentialRampToValueAtTime(0.6, ctx.currentTime+5);
   }catch(e){}
 }
 function lofiBar(){
-  if(!chant.on || chant.mode!=='sleep') return;
-  const ctx=chantAudio.ctx; if(!ctx){ return; }
+  if(!loop.on || loop.mode!=='sleep') return;
+  const ctx=loopAudio.ctx; if(!ctx){ return; }
   const bpm=70, beat=60/bpm, bar=beat*4, t0=ctx.currentTime+0.06;
-  LOFI_PROG[chant.bar % LOFI_PROG.length].forEach(f=> padNote(ctx,f,t0,bar*0.96));
-  if(chant.beatDrums!==false){
+  LOFI_PROG[loop.bar % LOFI_PROG.length].forEach(f=> padNote(ctx,f,t0,bar*0.96));
+  if(loop.beatDrums!==false){
     kick(ctx,t0); kick(ctx,t0+beat*2);
     hat(ctx,t0+beat,0.10); hat(ctx,t0+beat*2.5,0.07); hat(ctx,t0+beat*3,0.10);
   }
   if(Math.random()<0.7) pop(ctx, t0+Math.random()*bar);
-  chant.bar++;
-  chant.lofiTimer=setTimeout(lofiBar, bar*1000);
+  loop.bar++;
+  loop.lofiTimer=setTimeout(lofiBar, bar*1000);
 }
 function stopBed(){
   try{
-    if(chant.lofiTimer){ clearTimeout(chant.lofiTimer); chant.lofiTimer=null; }
-    (chantAudio.nodes||[]).forEach(n=>{ try{n.stop&&n.stop();}catch(e){} try{n.disconnect&&n.disconnect();}catch(e){} });
-    chantAudio.nodes=[];
-    ['padBus','drumBus','master'].forEach(k=>{ if(chantAudio[k]){ try{chantAudio[k].disconnect();}catch(e){} chantAudio[k]=null; } });
+    if(loop.lofiTimer){ clearTimeout(loop.lofiTimer); loop.lofiTimer=null; }
+    (loopAudio.nodes||[]).forEach(n=>{ try{n.stop&&n.stop();}catch(e){} try{n.disconnect&&n.disconnect();}catch(e){} });
+    loopAudio.nodes=[];
+    ['padBus','drumBus','master'].forEach(k=>{ if(loopAudio[k]){ try{loopAudio[k].disconnect();}catch(e){} loopAudio[k]=null; } });
   }catch(e){}
 }
 // sleep whispers: cycle the spines + sound-bridge hooks, slow & low, over long silences
@@ -1706,39 +1706,39 @@ const SLEEP_LINES=[
   {t:'in, an, auf, über, unter, vor… moving is accusative, resting is dative.', lang:'de-DE', hi:['pp-two']},
 ];
 function runSleep(){
-  if(!chant.on) return;
-  const remain = chant.sleepUntil ? chant.sleepUntil - Date.now() : Infinity;
-  if(chant.sleepUntil && remain<=0){ stopChant(); return; }
+  if(!loop.on) return;
+  const remain = loop.sleepUntil ? loop.sleepUntil - Date.now() : Infinity;
+  if(loop.sleepUntil && remain<=0){ stopLoop(); return; }
   // fade the bed out over the final 30s
-  if(chant.sleepUntil && remain<30000 && chantAudio.master && chantAudio.ctx){
-    try{ chantAudio.master.gain.cancelScheduledValues(chantAudio.ctx.currentTime); chantAudio.master.gain.exponentialRampToValueAtTime(0.0001, chantAudio.ctx.currentTime + Math.max(1,remain/1000)); }catch(e){}
+  if(loop.sleepUntil && remain<30000 && loopAudio.master && loopAudio.ctx){
+    try{ loopAudio.master.gain.cancelScheduledValues(loopAudio.ctx.currentTime); loopAudio.master.gain.exponentialRampToValueAtTime(0.0001, loopAudio.ctx.currentTime + Math.max(1,remain/1000)); }catch(e){}
   }
-  if(chant.voiceWanted!==false){
-    const it=SLEEP_LINES[chant.bi % SLEEP_LINES.length]; chant.bi++;
+  if(loop.voiceWanted!==false){
+    const it=SLEEP_LINES[loop.bi % SLEEP_LINES.length]; loop.bi++;
     clearLit(); (it.hi||[]).forEach(id=>{const e=document.getElementById(id); if(e)e.classList.add('lit');});
-    const now=document.getElementById('chantNow'); if(now) now.textContent=it.t;
+    const now=document.getElementById('loopNow'); if(now) now.textContent=it.t;
     softSpeak(it.t, it.lang);
   } else { clearLit(); }
-  chant.timer=setTimeout(runSleep, 15000); // long, restful gaps
+  loop.timer=setTimeout(runSleep, 15000); // long, restful gaps
 }
 function softSpeak(text, lang){
   if(!('speechSynthesis' in window)) return;
   try{ const u=new SpeechSynthesisUtterance(text); u.lang=lang||'de-DE'; if((lang||'').startsWith('de')&&audio.deVoice) u.voice=audio.deVoice; u.rate=0.72; u.pitch=0.85; u.volume=0.55; speechSynthesis.speak(u); }catch(e){}
 }
-function stopChant(){
-  chant.on=false;
+function stopLoop(){
+  loop.on=false;
   const a=lessonAudioEl(); if(a){ try{a.pause();}catch(e){} a.loop=false; }
   stopBedLayer();
-  if(chant._cueTimer){ clearInterval(chant._cueTimer); chant._cueTimer=null; }
-  if(chant._sleepTimer){ clearTimeout(chant._sleepTimer); chant._sleepTimer=null; }
-  if(chant._fadeTimer){ clearTimeout(chant._fadeTimer); chant._fadeTimer=null; }
-  if(chant.timer) clearTimeout(chant.timer);
+  if(loop._cueTimer){ clearInterval(loop._cueTimer); loop._cueTimer=null; }
+  if(loop._sleepTimer){ clearTimeout(loop._sleepTimer); loop._sleepTimer=null; }
+  if(loop._fadeTimer){ clearTimeout(loop._fadeTimer); loop._fadeTimer=null; }
+  if(loop.timer) clearTimeout(loop.timer);
   try{ speechSynthesis.cancel(); }catch(e){}
   if(typeof stopBed==='function'){ try{ stopBed(); }catch(e){} }
   if(typeof setPlayBtn==='function') setPlayBtn(false);
   if(typeof clearLit==='function') clearLit();
   const pf=document.getElementById('progFill'); if(pf) pf.style.width='0%';
-  const now=document.getElementById('chantNow'); if(now) now.textContent='der · den · dem · des — the cards light up as you listen';
+  const now=document.getElementById('loopNow'); if(now) now.textContent='der · den · dem · des — the cards light up as you listen';
 }
 
 // ============================================================
@@ -1762,7 +1762,7 @@ function renderPlanCard(){
   </div>`;
 }
 function markNight(){ const t=new Date().toISOString().slice(0,10); if(state.lastDone!==t){ const y=new Date(Date.now()-DAY).toISOString().slice(0,10); state.streak=(state.lastDone===y?(state.streak||0)+1:1); state.lastDone=t; save(); } }
-function startNightly(){ clearDrill(); markNight(); chant.mode='sleep'; show('chantScreen'); renderChant(); }
+function startNightly(){ clearDrill(); markNight(); loop.mode='sleep'; show('loopScreen'); renderLoop(); }
 function startPlan(){ ensurePlan(); planActive=true; renderPlanScreen(); }
 function maybeCompleteDay(){
   const t=new Date().toISOString().slice(0,10);
@@ -1803,11 +1803,11 @@ function completePlanStep(key){ if(!key) return; ensurePlan(); state.plan.steps[
 function renderWarmup(){
   document.getElementById('warmupScreen').innerHTML=`
     <div class="hud"><button class="hud-close" onclick="goHome()">✕</button><span class="hud-score">Warm-up</span><div style="width:38px"></div></div>
-    <div class="chant-body" style="max-width:440px;margin:0 auto;text-align:center;">
-      <div class="chant-sub">Say these out loud once. <b>der·den·dem·des</b> — dem≈“them”, des≈“’s”, den = the man gets hit.</div>
+    <div class="loop-body" style="max-width:440px;margin:0 auto;text-align:center;">
+      <div class="loop-sub">Say these out loud once. <b>der·den·dem·des</b> — dem≈“them”, des≈“’s”, den = the man gets hit.</div>
       <div class="spine-wrap">${spineHTML()}</div>
       <div class="hooks-row">${hooksHTML()}</div>
-      <div class="chant-controls"><button class="chant-play" onclick="completePlanStep('warmup');renderPlanScreen()">Got it ✓ — next</button></div>
+      <div class="loop-controls"><button class="loop-play" onclick="completePlanStep('warmup');renderPlanScreen()">Got it ✓ — next</button></div>
     </div>`;
   show('warmupScreen');
 }
