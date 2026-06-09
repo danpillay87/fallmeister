@@ -1614,12 +1614,9 @@ function renderLoop(){
       <div class="spine-wrap">${spineHTML()}</div>
       <div class="hooks-row">${hooksHTML()}</div>
       <div class="anchors-wrap">${anchorsHTML()}</div>
-      <details class="preps-details"><summary>Describing words — “the nice dog” (-e / -en) · level up</summary>
-        <div class="anchors-wrap">${adjHTML()}</div>
-      </details>
-      <details class="preps-details"><summary>Bossy little words — they pick the case for you (optional)</summary>
-        <div class="preps-wrap">${prepHTML()}</div>
-      </details>
+      <div class="anchors-wrap">${adjHTML()}</div>
+      <div class="anchors-head" style="margin-top:14px">🚦 bossy little words — they pick the case for you</div>
+      <div class="preps-wrap">${prepHTML()}</div>
     </div>`;
   wireLessonAudio();
   if(typeof updateVibeChip==='function') updateVibeChip();
