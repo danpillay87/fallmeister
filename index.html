@@ -1019,13 +1019,26 @@ function sfx(type) {
 // ============================================================
 const GENDER_COLOR={m:'#7c6cf0',f:'#f472b6',n:'#22d3ee',a:'#a78bfa'};
 const GENDER_PROP={m:'🔨',f:'🌸',n:'⚗️',a:'✨'};
+let _mUID=0;
 function mascotSVG(g) {
   const c=GENDER_COLOR[g]||GENDER_COLOR.a;
+  const u='m'+(_mUID++);   // unique ids so multiple mascots on one screen don't collide
   return `<svg viewBox="0 0 100 100" class="mascot-svg">
-    <ellipse cx="50" cy="56" rx="33" ry="35" fill="${c}"/>
-    <ellipse cx="50" cy="63" rx="21" ry="22" fill="rgba(255,255,255,0.16)"/>
-    <circle cx="29" cy="63" r="4.5" fill="rgba(255,255,255,0.30)"/>
-    <circle cx="71" cy="63" r="4.5" fill="rgba(255,255,255,0.30)"/>
+    <defs>
+      <radialGradient id="gl${u}" cx="42%" cy="28%" r="78%"><stop offset="0%" stop-color="#fff" stop-opacity=".45"/><stop offset="58%" stop-color="${c}" stop-opacity="0"/></radialGradient>
+      <filter id="sh${u}" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="3.2" flood-color="#15102b" flood-opacity=".30"/></filter>
+    </defs>
+    <g filter="url(#sh${u})">
+      <ellipse cx="28" cy="21" rx="9" ry="13" fill="${c}" transform="rotate(-20 28 21)"/>
+      <ellipse cx="72" cy="21" rx="9" ry="13" fill="${c}" transform="rotate(20 72 21)"/>
+      <ellipse cx="28" cy="22" rx="4" ry="7" fill="#fff" opacity=".25" transform="rotate(-20 28 22)"/>
+      <ellipse cx="72" cy="22" rx="4" ry="7" fill="#fff" opacity=".25" transform="rotate(20 72 22)"/>
+      <ellipse cx="50" cy="56" rx="33" ry="35" fill="${c}"/>
+      <ellipse cx="50" cy="56" rx="33" ry="35" fill="url(#gl${u})"/>
+      <ellipse cx="50" cy="66" rx="20" ry="20" fill="#fff" opacity=".15"/>
+      <ellipse class="blush" cx="29" cy="60" rx="7" ry="4.6" fill="#ff7a9c" opacity=".42"/>
+      <ellipse class="blush" cx="71" cy="60" rx="7" ry="4.6" fill="#ff7a9c" opacity=".42"/>
+    </g>
     <g class="m-face"></g>
   </svg>`;
 }
