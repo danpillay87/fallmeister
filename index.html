@@ -413,6 +413,19 @@ body {
 .preps-details .preps-wrap { margin-top:6px; }
 .adj-rule { font-size:11.5px; color:var(--text-dim); line-height:1.55; margin-top:8px; padding:0 4px; }
 .adj-rule b { color:var(--accent); }
+/* capstone — the big sentence */
+.capstone-wrap { margin-top:18px; }
+.bigsentence { font-size:16px; line-height:2.1; text-align:center; color:var(--text); }
+.bschunk { padding:2px 6px; border-radius:7px; font-weight:700; white-space:nowrap; border-bottom:2px solid transparent; transition:background .2s, transform .2s; }
+.bschunk.j0{ color:#c4b5fd; border-color:#7c6cf0; } .bschunk.j1{ color:#7fd1c9; border-color:#2bb3a3; }
+.bschunk.j2{ color:#f4b8c0; border-color:#e06d8a; } .bschunk.j3{ color:#ffd28a; border-color:#e0a13a; } .bschunk.j4{ color:#9ec9ff; border-color:#5a8fe0; }
+.bschunk.lit { background:var(--accent); color:#fff; transform:scale(1.06); }
+.bs-gloss { font-size:12px; color:var(--text-dim); text-align:center; margin-top:8px; font-style:italic; }
+.bs-legend { display:flex; flex-wrap:wrap; gap:6px 12px; justify-content:center; margin-top:10px; font-size:10.5px; color:var(--text-dim); }
+.bs-legend b { font-style:normal; }
+.bs-legend .d0{ color:#c4b5fd; } .bs-legend .d1{ color:#7fd1c9; } .bs-legend .d2{ color:#f4b8c0; } .bs-legend .d3{ color:#ffd28a; } .bs-legend .d4{ color:#9ec9ff; }
+.bs-people { font-size:11px; color:var(--text-dim); text-align:center; margin-top:12px; line-height:1.6; }
+.bs-people b { color:var(--accent); }
 /* ---- code-generated cute dog (max-effort animation) ---- */
 .dog-stage { max-width:440px; margin:8px auto 18px; height:178px; position:relative; }
 .dog-stage .dog { display:block; width:216px; height:auto; margin:0 auto; overflow:visible; }
@@ -1508,6 +1521,21 @@ function adjHTML(){
     rows.map(r=>`<div class="anchor"><div class="an-de">${r.de}</div><div class="an-sub">${r.tag}</div></div>`).join('')+
     `<div class="adj-rule">The ending just <b>copies how lazy the “the” was</b>. 🐕 Dog: soft <b>-e</b> only for the doer (der nett<b>e</b>), then <b>-en</b>. 🐱 Lazy cat: <b>-e</b> for both her first jobs (die nett<b>e</b>, die nett<b>e</b>), then <b>-en</b>, <b>-en</b>.</div>`;
 }
+function capstoneHTML(){
+  return `<div class="anchors-head">🏆 the big one — every job in one sentence</div>
+    <div class="bigsentence">
+      <span class="bschunk j0" id="bs0">Ich</span> gebe
+      <span class="bschunk j1" id="bs1">dem Hund</span>
+      <span class="bschunk j2" id="bs2">des kleinen Mädchens</span>
+      <span class="bschunk j3" id="bs3">einen glänzenden Knochen</span>
+      <span class="bschunk j4" id="bs4">vom großen Mann</span>.
+    </div>
+    <div class="bs-gloss">“I give the small girl’s dog a shiny bone from the tall man.”</div>
+    <div class="bs-legend">
+      <span><b class="d0">Ich</b> doer</span><span><b class="d1">dem Hund</b> give-to</span><span><b class="d2">des … Mädchens</b> owner</span><span><b class="d3">einen … Knochen</b> done-to</span><span><b class="d4">vom … Mann</b> from</span>
+    </div>
+    <div class="bs-people">people: <b>ich·mich·mir</b> · du·dich·dir · er·ihn·ihm · sie·sie·ihr — whose: dein → dein<b>en</b> → dein<b>em</b> (wears the dog’s tails)</div>`;
+}
 function spineHTML(){
   let h='<div class="spine-head"><span></span><span>Nom</span><span>Akk</span><span>Dat</span><span>Gen</span></div>';
   for(const s of SPINES){ h+=`<div class="spine ${s.cls}"><span class="sp-lab">${s.emoji}</span>`+s.words.map((w,i)=>`<span class="sp-w" id="${s.pre}${i}">${w}</span>`).join('')+`</div>`; }
@@ -1617,6 +1645,7 @@ function renderLoop(){
       <div class="anchors-wrap">${adjHTML()}</div>
       <div class="anchors-head" style="margin-top:14px">🚦 bossy little words — they pick the case for you</div>
       <div class="preps-wrap">${prepHTML()}</div>
+      <div class="capstone-wrap">${capstoneHTML()}</div>
     </div>`;
   wireLessonAudio();
   if(typeof updateVibeChip==='function') updateVibeChip();
@@ -1662,7 +1691,7 @@ function playNote(freq,dur){ dur=dur||0.45;
     o.start(t); o.stop(t+dur+0.03);
   }catch(e){}
 }
-function clearLit(){ document.querySelectorAll('.sp-w.lit,.hookcard.lit,.preprow.lit,.anchor.lit').forEach(e=>e.classList.remove('lit')); }
+function clearLit(){ document.querySelectorAll('.sp-w.lit,.hookcard.lit,.preprow.lit,.anchor.lit,.bschunk.lit').forEach(e=>e.classList.remove('lit')); }
 function litWord(id){ clearLit(); const e=document.getElementById(id); if(e)e.classList.add('lit'); }
 function litHook(id){ clearLit(); const e=document.getElementById(id); if(e)e.classList.add('lit'); }
 
