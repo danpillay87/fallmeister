@@ -541,7 +541,8 @@ body {
 .spine-head { display:grid; grid-template-columns:40px repeat(4,1fr); gap:6px; margin-bottom:5px; }
 .spine-head span { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); font-weight:700; text-align:center; }
 .spine { display:grid; grid-template-columns:40px repeat(4,1fr); gap:6px; margin-bottom:6px; align-items:center; }
-.spine .sp-lab { font-size:20px; text-align:center; color:var(--text-dim); }
+.spine .sp-lab { width:34px; height:34px; margin:0 auto; display:block; }
+.spine .sp-lab .mascot-svg { width:34px; height:34px; }
 .spine .sp-w { background:var(--surface2); border-radius:9px; padding:12px 2px; font-size:19px; font-weight:800; color:var(--text-mid); text-align:center; transition:transform .12s, background .12s, color .12s; }
 .spine .sp-w.lit { background:var(--accent); color:#fff; transform:scale(1.14); }
 .spine.sp-m .sp-w { box-shadow:inset 0 0 0 1.5px rgba(124,108,240,.4); }
@@ -625,7 +626,7 @@ body {
 @keyframes mascotFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
 @keyframes mascotBounce { 0%{transform:translateY(0) scale(1)} 30%{transform:translateY(-20px) scale(1.1)} 55%{transform:translateY(0) scale(0.94)} 75%{transform:translateY(-6px) scale(1.02)} 100%{transform:translateY(0) scale(1)} }
 @keyframes mascotWobble { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-10deg)} 50%{transform:rotate(9deg)} 80%{transform:rotate(-5deg)} }
-@keyframes blink { 0%,90%,100%{transform:scaleY(1)} 95%{transform:scaleY(0.08)} }
+/* blink keyframe is defined once in the loop-stage section above (shared) */
 .mascot.idle { animation:mascotFloat 3s ease-in-out infinite; }
 .mascot.happy { animation:mascotBounce 0.6s ease; }
 .mascot.sad { animation:mascotWobble 0.5s ease; }
@@ -1017,52 +1018,83 @@ function sfx(type) {
 // ============================================================
 //  MASCOT — cute SVG character "Fips"
 // ============================================================
-const GENDER_COLOR={m:'#7c6cf0',f:'#f472b6',n:'#22d3ee',a:'#a78bfa'};
 const GENDER_PROP={m:'🔨',f:'🌸',n:'⚗️',a:'✨'};
+// ============================================================
+//  UNIFIED CHARACTER LIBRARY — one art style across the whole app.
+//  Full-body dog & cat animate on the loop stage (dogSVG/catSVG); these
+//  compact HEADS share the same palette + eyes + blush so home, drill,
+//  results and the spine table all read as the same family.
+//  Gender → creature: m = dog (der Hund), f = cat (die Katze), n = child (das Kind).
+// ============================================================
+const CREATURE={m:'dog',f:'cat',n:'child',a:'dog'};
+const PAL={
+  dog:  {top:'#C99A63',bot:'#8C6133',line:'#6e4a2a',muz:'#E8CB97',ear:'#7E5A33',earIn:'#E79B92'},
+  cat:  {top:'#BFC6D0',bot:'#7C8590',line:'#5f6772',muz:'#C9CFD6',ear:'#828B96',earIn:'#E78CA0'},
+  child:{top:'#F4C99B',bot:'#DCA877',line:'#9A6A3F',muz:'#F9D9B4',ear:'#F4C99B',earIn:'#E79B92'},
+};
 let _mUID=0;
-function mascotSVG(g) {
-  const c=GENDER_COLOR[g]||GENDER_COLOR.a;
-  const u='m'+(_mUID++);   // unique ids so multiple mascots on one screen don't collide
-  return `<svg viewBox="0 0 100 100" class="mascot-svg">
-    <defs>
-      <radialGradient id="gl${u}" cx="42%" cy="28%" r="78%"><stop offset="0%" stop-color="#fff" stop-opacity=".45"/><stop offset="58%" stop-color="${c}" stop-opacity="0"/></radialGradient>
-      <filter id="sh${u}" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="3.2" flood-color="#15102b" flood-opacity=".30"/></filter>
-    </defs>
-    <g filter="url(#sh${u})">
-      <ellipse cx="28" cy="21" rx="9" ry="13" fill="${c}" transform="rotate(-20 28 21)"/>
-      <ellipse cx="72" cy="21" rx="9" ry="13" fill="${c}" transform="rotate(20 72 21)"/>
-      <ellipse cx="28" cy="22" rx="4" ry="7" fill="#fff" opacity=".25" transform="rotate(-20 28 22)"/>
-      <ellipse cx="72" cy="22" rx="4" ry="7" fill="#fff" opacity=".25" transform="rotate(20 72 22)"/>
-      <ellipse cx="50" cy="56" rx="33" ry="35" fill="${c}"/>
-      <ellipse cx="50" cy="56" rx="33" ry="35" fill="url(#gl${u})"/>
-      <ellipse cx="50" cy="66" rx="20" ry="20" fill="#fff" opacity=".15"/>
-      <ellipse class="blush" cx="29" cy="60" rx="7" ry="4.6" fill="#ff7a9c" opacity=".42"/>
-      <ellipse class="blush" cx="71" cy="60" rx="7" ry="4.6" fill="#ff7a9c" opacity=".42"/>
+// shared mood face — eyes anchored at (38,50)/(62,50), mouth ~ y65
+function creatureFace(mood,line){
+  line=line||'#241a12';
+  if(mood==='happy'||mood==='celebrate') return `
+    <path d="M30 49 q8 -8 16 0" stroke="${line}" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M54 49 q8 -8 16 0" stroke="${line}" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M40 64 q10 12 20 0 q-10 6 -20 0" stroke="${line}" stroke-width="3.4" fill="${line}" stroke-linejoin="round"/>`;
+  if(mood==='sad') return `
+    <g class="eyes"><circle cx="38" cy="50" r="6" fill="#fff" stroke="${line}" stroke-width="1.3"/><circle cx="62" cy="50" r="6" fill="#fff" stroke="${line}" stroke-width="1.3"/>
+    <circle cx="38" cy="52" r="3.1" fill="${line}"/><circle cx="62" cy="52" r="3.1" fill="${line}"/></g>
+    <path d="M41 67 q9 -8 18 0" stroke="${line}" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+    <path d="M31 56 q-1 5 1 8" stroke="#7cc7ff" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  return `<g class="eyes">
+    <circle cx="38" cy="50" r="6.6" fill="#fff" stroke="${line}" stroke-width="1.3"/><circle cx="62" cy="50" r="6.6" fill="#fff" stroke="${line}" stroke-width="1.3"/>
+    <circle cx="39" cy="51.5" r="3.4" fill="${line}"/><circle cx="63" cy="51.5" r="3.4" fill="${line}"/>
+    <circle cx="40.4" cy="49.6" r="1.3" fill="#fff"/><circle cx="64.4" cy="49.6" r="1.3" fill="#fff"/></g>
+    <path d="M42 65 q8 7 16 0" stroke="${line}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+}
+// per-creature frame (ears + head + snout) wrapped around the shared face
+function creatureHead(kind, mood){
+  kind=(kind in PAL)?kind:'dog';
+  const p=PAL[kind], u='c'+(_mUID++);
+  const defs=`<defs>
+      <radialGradient id="g${u}" cx="40%" cy="25%" r="86%"><stop offset="0%" stop-color="${p.top}"/><stop offset="100%" stop-color="${p.bot}"/></radialGradient>
+      <filter id="s${u}" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="3.4" flood-color="#1a1206" flood-opacity=".26"/></filter>
+    </defs>`;
+  let ears='', snout='';
+  if(kind==='dog'){
+    ears=`<path d="M22 28 q-17 -7 -21 16 q15 8 27 -3 z" fill="${p.ear}" stroke="${p.line}" stroke-width="2.5"/>
+          <path d="M78 28 q17 -7 21 16 q-15 8 -27 -3 z" fill="${p.ear}" stroke="${p.line}" stroke-width="2.5"/>
+          <path d="M17 31 q-9 -4 -12 10 q9 4 16 -2 z" fill="${p.earIn}" opacity=".82"/>
+          <path d="M83 31 q9 -4 12 10 q-9 4 -16 -2 z" fill="${p.earIn}" opacity=".82"/>`;
+    snout=`<ellipse cx="50" cy="65" rx="20" ry="15" fill="${p.muz}"/>
+           <ellipse cx="50" cy="59" rx="7.5" ry="6" fill="#241a12"/><ellipse cx="47.4" cy="57" rx="2.2" ry="1.6" fill="#6a5236"/>`;
+  } else if(kind==='cat'){
+    ears=`<path d="M25 28 l1 -22 l21 17 z" fill="${p.ear}" stroke="${p.line}" stroke-width="2.5"/>
+          <path d="M75 28 l-1 -22 l-21 17 z" fill="${p.ear}" stroke="${p.line}" stroke-width="2.5"/>
+          <path d="M29 24 l1 -11 l10 8 z" fill="${p.earIn}"/><path d="M71 24 l-1 -11 l-10 8 z" fill="${p.earIn}"/>`;
+    snout=`<path d="M50 60 l-5 5 h10 z" fill="${p.earIn}"/>
+           <g stroke="#cfd6de" stroke-width="2" stroke-linecap="round"><line x1="33" y1="59" x2="11" y2="55"/><line x1="33" y1="64" x2="11" y2="68"/><line x1="67" y1="59" x2="89" y2="55"/><line x1="67" y1="64" x2="89" y2="68"/></g>`;
+  } else { // child
+    ears=`<ellipse cx="19" cy="55" rx="6" ry="8" fill="${p.top}" stroke="${p.line}" stroke-width="2.2"/>
+          <ellipse cx="81" cy="55" rx="6" ry="8" fill="${p.top}" stroke="${p.line}" stroke-width="2.2"/>
+          <path d="M24 32 q9 -19 26 -19 q17 0 26 19 q-12 -9 -26 -9 q-14 0 -26 9 z" fill="#7B4B2A"/>
+          <path d="M40 15 q10 -6 20 0 q-10 9 -20 0 z" fill="#7B4B2A"/>`;
+  }
+  return `<svg viewBox="0 0 100 100" class="mascot-svg">${defs}
+    <g filter="url(#s${u})">
+      ${ears}
+      <ellipse cx="50" cy="54" rx="34" ry="34" fill="url(#g${u})" stroke="${p.line}" stroke-width="3"/>
+      ${snout}
+      <ellipse class="blush" cx="27" cy="61" rx="8" ry="5" fill="#F2998E" opacity=".5"/>
+      <ellipse class="blush" cx="73" cy="61" rx="8" ry="5" fill="#F2998E" opacity=".5"/>
+      ${creatureFace(mood,p.line)}
     </g>
-    <g class="m-face"></g>
   </svg>`;
 }
-function faceMarkup(mood) {
-  if(mood==='happy'||mood==='celebrate') return `
-    <path d="M32 49 q7 -8 14 0" stroke="#15151f" stroke-width="4" fill="none" stroke-linecap="round"/>
-    <path d="M54 49 q7 -8 14 0" stroke="#15151f" stroke-width="4" fill="none" stroke-linecap="round"/>
-    <path d="M39 60 q11 15 22 0 q-11 6 -22 0" stroke="#15151f" stroke-width="3.5" fill="#15151f" stroke-linejoin="round"/>`;
-  if(mood==='sad') return `
-    <circle cx="39" cy="51" r="6" fill="#fff"/><circle cx="61" cy="51" r="6" fill="#fff"/>
-    <circle cx="39" cy="53" r="3" fill="#15151f"/><circle cx="61" cy="53" r="3" fill="#15151f"/>
-    <path d="M40 65 q10 -9 20 0" stroke="#15151f" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-    <path d="M33 56 q-1 5 1 8" stroke="#7cc7ff" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-  return `<g class="eyes">
-    <circle cx="39" cy="50" r="6.5" fill="#fff"/><circle cx="61" cy="50" r="6.5" fill="#fff"/>
-    <circle cx="40" cy="51" r="3.2" fill="#15151f"/><circle cx="62" cy="51" r="3.2" fill="#15151f"/>
-    <circle cx="41.5" cy="49.5" r="1.2" fill="#fff"/><circle cx="63.5" cy="49.5" r="1.2" fill="#fff"/></g>
-    <path d="M43 61 q7 7 14 0" stroke="#15151f" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-}
+function mascotSVG(g){ return creatureHead(CREATURE[g]||'dog','idle'); }
 function renderMascot(el, g, mood, prop) {
   if(!el) return;
   el.className='mascot '+(mood==='happy'?'happy':mood==='sad'?'sad':mood==='celebrate'?'celebrate':'idle');
-  el.innerHTML=mascotSVG(g)+(prop?`<span class="m-prop">${GENDER_PROP[g]||GENDER_PROP.a}</span>`:'');
-  const face=el.querySelector('.m-face'); if(face) face.innerHTML=faceMarkup(mood);
+  el.innerHTML=creatureHead(CREATURE[g]||'dog',mood||'idle')+(prop?`<span class="m-prop">${GENDER_PROP[g]||GENDER_PROP.a}</span>`:'');
 }
 function mascotReact(el, g, mood) {
   if(!el) return;
@@ -1508,9 +1540,9 @@ let loopAudio={ctx:null, osc:[], gain:null};
 function startLoop(){ clearDrill(); loop.mode='active'; show('loopScreen'); renderLoop(); }
 
 const SPINES=[
-  {emoji:'🐕', cls:'sp-m', pre:'m', words:['der','den','dem','des']},
-  {emoji:'🐱', cls:'sp-f', pre:'f', words:['die','die','der','der']},
-  {emoji:'👶', cls:'sp-n', pre:'n', words:['das','das','dem','des']},
+  {kind:'dog',   cls:'sp-m', pre:'m', words:['der','den','dem','des']},
+  {kind:'cat',   cls:'sp-f', pre:'f', words:['die','die','der','der']},
+  {kind:'child', cls:'sp-n', pre:'n', words:['das','das','dem','des']},
 ];
 // One dog, one connected story — the trick for each case is part of his day.
 const HOOKCARDS=[
@@ -1567,8 +1599,8 @@ function capstoneHTML(){
 }
 function spineHTML(){
   let h='<div class="spine-head"><span></span><span>Nom</span><span>Akk</span><span>Dat</span><span>Gen</span></div>';
-  for(const s of SPINES){ h+=`<div class="spine ${s.cls}"><span class="sp-lab">${s.emoji}</span>`+s.words.map((w,i)=>`<span class="sp-w" id="${s.pre}${i}">${w}</span>`).join('')+`</div>`; }
-  h+=`<div class="spine-note"><b>🐕 changes all four · 🐱 barely moves</b></div>`;
+  for(const s of SPINES){ h+=`<div class="spine ${s.cls}"><span class="sp-lab">${creatureHead(s.kind,'idle')}</span>`+s.words.map((w,i)=>`<span class="sp-w" id="${s.pre}${i}">${w}</span>`).join('')+`</div>`; }
+  h+=`<div class="spine-note"><b>the dog (der) changes all four · the lazy cat (die) barely moves</b></div>`;
   return h;
 }
 function hooksHTML(){
