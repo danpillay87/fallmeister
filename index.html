@@ -401,6 +401,7 @@ body {
 .prog { height:6px; background:var(--surface2); border-radius:99px; margin-top:12px; cursor:pointer; overflow:hidden; }
 .prog-fill { height:100%; width:0%; background:var(--accent); border-radius:99px; }
 .now { margin-top:12px; min-height:20px; font-size:14px; font-weight:700; color:var(--accent); text-align:center; line-height:1.4; }
+.loop-variant { font-size:11px; color:var(--text-dim); text-align:center; margin-top:6px; letter-spacing:.02em; }
 .player-row { display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
 .player-row .chip { background:var(--surface2); border:1px solid var(--border); color:var(--text-mid); border-radius:99px; padding:10px 15px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; text-decoration:none; }
 .player-row select.chip { -webkit-appearance:none; appearance:none; text-align:center; }
@@ -1629,10 +1630,11 @@ function renderLoop(){
         <button class="bigplay" id="loopPlay" onclick="toggleLoop()"><span class="bp-ic">▶</span><span class="bp-tx">Play the lesson</span></button>
         <div class="prog" id="progWrap" onclick="seekLoop(event)"><div class="prog-fill" id="progFill"></div></div>
         <div class="now" id="loopNow">der · den · dem · des — the cards light up as you listen</div>
+        <div class="loop-variant" id="loopVariant">tonight's cast loads on play…</div>
         <div class="player-row">
           <button class="chip" id="vibeChip" onclick="cycleBed()" title="Music — tap to change">🎵 Auto</button>
           <select class="chip" id="loopSleep" title="Auto-stop"><option value="0">No timer</option><option value="20">Stop · 20m</option><option value="30" selected>Stop · 30m</option><option value="45">Stop · 45m</option><option value="60">Stop · 60m</option></select>
-          <a class="chip" href="learn-de.mp3" download="fallmeister-german-lesson.mp3" title="Save for offline">⬇ Save</a>
+          <a class="chip" id="loopSave" href="learn-de.mp3" download="fallmeister-german-lesson.mp3" title="Save for offline">⬇ Save</a>
         </div>
         <audio id="lessonAudio" preload="none" src="learn-voice.mp3"></audio>
         <audio id="bedAudio" loop preload="none"></audio>
@@ -1648,6 +1650,7 @@ function renderLoop(){
       <div class="capstone-wrap">${capstoneHTML()}</div>
     </div>`;
   wireLessonAudio();
+  if(typeof applyVariant==='function') applyVariant();
   if(typeof updateVibeChip==='function') updateVibeChip();
 }
 function setPlayBtn(playing){
@@ -1667,7 +1670,8 @@ function wireLessonAudio(){
     // streaming-stall fallback: fetch the whole file and play the blob
     setTimeout(async ()=>{
       if(!la._blob && la.currentTime===0 && la.readyState<2){
-        try{ const r=await fetch('learn-de.mp3?b='+Date.now(),{cache:'force-cache'}); const b=await r.blob();
+        try{ const src=(CURVAR&&CURVAR.voice)||la.getAttribute('src')||'learn-voice.mp3';
+          const r=await fetch(src+'?b='+Date.now(),{cache:'force-cache'}); const b=await r.blob();
           la._blob=true; la.src=URL.createObjectURL(b); la.load(); await la.play();
         }catch(e){}
       }
@@ -1730,9 +1734,23 @@ const TEACHING=[
   {en:"Oh — and if a grown-up uses the big words: nominative is doer, accusative is done-to, dative is give-to, genitive is his. Same thing. Let's go again.", now:"the grown-up names, just so you know"},
 ];
 // ---- Unified playback: ONE premium MP3, cards highlight from a timestamp map (cues.json) ----
-let CUES=null;
+let CUES=null, CUES_URL='cues.json', LOOPS=null, CURVAR=null;
 function lessonAudioEl(){ return document.getElementById('lessonAudio'); }
-function loadCues(){ if(CUES) return Promise.resolve(CUES); return fetch('cues.json',{cache:'no-cache'}).then(r=>r.json()).then(c=>{CUES=c;return c;}).catch(()=>{CUES=[];return CUES;}); }
+function loadCues(){ if(CUES) return Promise.resolve(CUES); return fetch(CUES_URL,{cache:'no-cache'}).then(r=>r.json()).then(c=>{CUES=c;return c;}).catch(()=>{CUES=[];return CUES;}); }
+// --- nightly variant rotation: same lesson, different cast (dog/bird/tiger), picked by day ---
+function loadLoops(){ if(LOOPS) return Promise.resolve(LOOPS); return fetch('loops.json',{cache:'no-cache'}).then(r=>r.json()).then(j=>{LOOPS=(j&&j.variants)||[];return LOOPS;}).catch(()=>{LOOPS=[];return LOOPS;}); }
+function heroEmoji(id){ return {dog:'🐕',bird:'🐦',tiger:'🐯'}[id]||'🐾'; }
+function pickVariant(){ if(!LOOPS||!LOOPS.length) return null; return LOOPS[Math.floor(Date.now()/86400000)%LOOPS.length]; }
+function applyVariant(){
+  return loadLoops().then(()=>{
+    const v=pickVariant(); if(!v) return null;
+    CURVAR=v; CUES=null; CUES_URL=v.cues;
+    const a=lessonAudioEl(); if(a && a.getAttribute('src')!==v.voice){ a.setAttribute('src',v.voice); a.load(); }
+    const dl=document.getElementById('loopSave'); if(dl) dl.href=v.mixed;
+    const lbl=document.getElementById('loopVariant'); if(lbl) lbl.textContent='tonight: '+heroEmoji(v.id)+' '+v.hero;
+    return v;
+  });
+}
 function tickCues(a){
   if(!a) return;
   const t=a.currentTime||0, d=a.duration||0;

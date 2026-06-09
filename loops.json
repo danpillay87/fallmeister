@@ -1,0 +1,28 @@
+{
+  "variants": [
+    {
+      "id": "dog",
+      "hero": "the dog",
+      "voice": "learn-voice-dog.mp3",
+      "mixed": "learn-dog.mp3",
+      "cues": "cues-dog.json",
+      "sec": 627.5
+    },
+    {
+      "id": "bird",
+      "hero": "the bird",
+      "voice": "learn-voice-bird.mp3",
+      "mixed": "learn-bird.mp3",
+      "cues": "cues-bird.json",
+      "sec": 618.0
+    },
+    {
+      "id": "tiger",
+      "hero": "the tiger",
+      "voice": "learn-voice-tiger.mp3",
+      "mixed": "learn-tiger.mp3",
+      "cues": "cues-tiger.json",
+      "sec": 619.4
+    }
+  ]
+}
