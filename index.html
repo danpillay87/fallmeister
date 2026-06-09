@@ -1632,8 +1632,8 @@ function renderLoop(){
         <div class="now" id="loopNow">der · den · dem · des — the cards light up as you listen</div>
         <div class="loop-variant" id="loopVariant">tonight's cast loads on play…</div>
         <div class="player-row">
-          <button class="chip" id="vibeChip" onclick="cycleBed()" title="Music — tap to change">🎵 Auto</button>
-          <select class="chip" id="loopSleep" title="Auto-stop"><option value="0">No timer</option><option value="20">Stop · 20m</option><option value="30" selected>Stop · 30m</option><option value="45">Stop · 45m</option><option value="60">Stop · 60m</option></select>
+          <button class="chip" id="vibeChip" onclick="cycleBed()" title="Tap to change the music">🎵 Music: Auto ⟳</button>
+          <select class="chip" id="loopSleep" title="When to auto-stop"><option value="0">⏱ No auto-stop</option><option value="20">⏱ Auto-stop 20m</option><option value="30" selected>⏱ Auto-stop 30m</option><option value="45">⏱ Auto-stop 45m</option><option value="60">⏱ Auto-stop 60m</option></select>
           <a class="chip" id="loopSave" href="learn-de.mp3" download="fallmeister-german-lesson.mp3" title="Save for offline">⬇ Save</a>
         </div>
         <audio id="lessonAudio" preload="none" src="learn-voice.mp3"></audio>
@@ -1797,7 +1797,7 @@ function startBedLayer(){
 function stopBedLayer(){ const be=bedEl(); if(be){ try{be.pause();}catch(e){} } }
 function updateVibeChip(){
   const c=document.getElementById('vibeChip'); if(!c) return; const r=resolveBed();
-  c.textContent = '🎵 ' + r.label + (r.auto?' · auto':'');
+  c.textContent = '🎵 Music: ' + r.label + (r.auto?' (auto)':'') + ' ⟳';
 }
 function cycleBed(){
   const keys=BEDS.map(b=>b.key); let i=keys.indexOf(loop.bedOverride||'auto'); i=(i+1)%keys.length;
