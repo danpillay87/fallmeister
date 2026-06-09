@@ -6,7 +6,7 @@
       "voice": "learn-voice-dog.mp3",
       "mixed": "learn-dog.mp3",
       "cues": "cues-dog.json",
-      "sec": 608.4
+      "sec": 664.1
     },
     {
       "id": "bird",
@@ -14,7 +14,7 @@
       "voice": "learn-voice-bird.mp3",
       "mixed": "learn-bird.mp3",
       "cues": "cues-bird.json",
-      "sec": 618.0
+      "sec": 660.0
     },
     {
       "id": "tiger",
@@ -22,7 +22,7 @@
       "voice": "learn-voice-tiger.mp3",
       "mixed": "learn-tiger.mp3",
       "cues": "cues-tiger.json",
-      "sec": 623.3
+      "sec": 668.1
     }
   ]
 }
