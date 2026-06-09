@@ -437,9 +437,11 @@ body {
 .dog-stage .dust circle { transform-box:fill-box; transform-origin:50% 50%; }
 .dog-stage .bone-in { transform-box:fill-box; transform-origin:50% 50%; }
 #dog { transform-box:fill-box; transform-origin:50% 97%; animation:breathe 3.2s ease-in-out infinite; }
-#tail { transform-box:fill-box; transform-origin:6% 60%; animation:wag .9s ease-in-out infinite; }
-#earL { transform-box:fill-box; transform-origin:80% 95%; animation:earSway 2.8s ease-in-out infinite; }
-#earR { transform-box:fill-box; transform-origin:20% 95%; animation:earSway 2.8s ease-in-out infinite reverse; }
+#dog { transform-box:fill-box; transform-origin:50% 100%; animation:breathe 3.9s ease-in-out infinite; }
+#tail { transform-box:fill-box; transform-origin:6% 60%; animation:idleWag 1.7s ease-in-out infinite; }
+#earL { transform-box:fill-box; transform-origin:80% 95%; animation:earSway 3.2s ease-in-out infinite; }
+#earR { transform-box:fill-box; transform-origin:20% 95%; animation:earSway 3.2s ease-in-out infinite reverse; }
+@keyframes idleWag { 0%,100%{transform:rotate(7deg)} 50%{transform:rotate(-11deg)} }
 #armL,#armR,#footL,#footR { transform-box:fill-box; transform-origin:50% 8%; }
 #pupils { transform-box:fill-box; transform-origin:50% 50%; }
 #browL,#browR { transform-box:fill-box; transform-origin:50% 100%; }
@@ -1572,33 +1574,39 @@ function prepHTML(){
 function dogSVG(){ return `
 <svg class="dog" viewBox="0 0 220 178" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <defs>
-    <radialGradient id="furG" cx="40%" cy="28%" r="82%"><stop offset="0%" stop-color="#BC8D58"/><stop offset="100%" stop-color="#8C6133"/></radialGradient>
-    <radialGradient id="muzG" cx="50%" cy="36%" r="72%"><stop offset="0%" stop-color="#E8CB97"/><stop offset="100%" stop-color="#D0AC73"/></radialGradient>
+    <radialGradient id="furG" cx="38%" cy="24%" r="86%"><stop offset="0%" stop-color="#C99A63"/><stop offset="55%" stop-color="#B6864F"/><stop offset="100%" stop-color="#855B2f"/></radialGradient>
+    <radialGradient id="muzG" cx="50%" cy="34%" r="74%"><stop offset="0%" stop-color="#F1D8A6"/><stop offset="100%" stop-color="#CFA96E"/></radialGradient>
     <radialGradient id="proudG" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFE6A0" stop-opacity=".55"/><stop offset="100%" stop-color="#FFE6A0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="blushG" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#F2998E" stop-opacity=".62"/><stop offset="100%" stop-color="#F2998E" stop-opacity="0"/></radialGradient>
+    <filter id="softShad" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3.5" stdDeviation="4.5" flood-color="#3a2410" flood-opacity="0.22"/></filter>
   </defs>
   <ellipse class="shadow" id="shadow" cx="110" cy="170" rx="52" ry="8"/>
   <circle class="prop proudglow" cx="110" cy="92" r="84" fill="url(#proudG)"/>
   <g class="prop speed"><line x1="2" y1="62" x2="42" y2="62"/><line x1="-4" y1="86" x2="36" y2="86"/><line x1="4" y1="110" x2="40" y2="110"/></g>
   <g class="prop dust"><circle class="p1" cx="70" cy="166" r="7" fill="#cdbb9a"/><circle class="p2" cx="150" cy="166" r="6" fill="#cdbb9a"/></g>
-  <g id="dog">
+  <g id="dog" filter="url(#softShad)">
     <path id="tail" d="M152 120 q30 2 34 -24 q4 24 -30 20 z" fill="#7E5A33" stroke="#6e4a2a" stroke-width="2.5"/>
     <ellipse id="footL" cx="84" cy="160" rx="17" ry="11" fill="#7E5A33" stroke="#6e4a2a" stroke-width="2.5"/>
     <ellipse id="footR" cx="136" cy="160" rx="17" ry="11" fill="#7E5A33" stroke="#6e4a2a" stroke-width="2.5"/>
     <ellipse id="armL" cx="58" cy="116" rx="13" ry="21" transform="rotate(15 58 116)" fill="#9A6C3C" stroke="#6e4a2a" stroke-width="2.5"/>
     <ellipse id="armR" cx="162" cy="116" rx="13" ry="21" transform="rotate(-15 162 116)" fill="#9A6C3C" stroke="#6e4a2a" stroke-width="2.5"/>
     <path class="ear" id="earL" d="M70 30 q-22 -10 -30 16 q18 8 32 -4 z" fill="#7E5A33" stroke="#6e4a2a" stroke-width="2.5"/>
+    <path class="ear-in" d="M63 31 q-13 -5 -19 10 q11 5 20 -3 z" fill="#E79B92" opacity=".8"/>
     <path class="ear" id="earR" d="M150 30 q22 -10 30 16 q-18 8 -32 -4 z" fill="#7E5A33" stroke="#6e4a2a" stroke-width="2.5"/>
+    <path class="ear-in" d="M157 31 q13 -5 19 10 q-11 5 -20 -3 z" fill="#E79B92" opacity=".8"/>
     <path d="M110 16 C151 16 161 52 161 82 C161 104 157 113 155 126 C153 152 139 162 110 162 C81 162 67 152 65 126 C63 113 59 104 59 82 C59 52 69 16 110 16 Z" fill="url(#furG)" stroke="#6e4a2a" stroke-width="3.5"/>
     <ellipse cx="110" cy="138" rx="30" ry="22" fill="#E0C089" opacity=".55"/>
     <ellipse cx="90" cy="48" rx="26" ry="16" fill="#fff" opacity=".12"/>
     <ellipse cx="110" cy="110" rx="36" ry="29" fill="url(#muzG)"/>
+    <ellipse class="blush" cx="79" cy="103" rx="13" ry="9" fill="url(#blushG)"/>
+    <ellipse class="blush" cx="141" cy="103" rx="13" ry="9" fill="url(#blushG)"/>
     <path id="browL" d="M81 63 q10 -6 19 -1" stroke="#6e4a2a" stroke-width="3" fill="none" stroke-linecap="round"/>
     <path id="browR" d="M120 62 q10 -5 19 1" stroke="#6e4a2a" stroke-width="3" fill="none" stroke-linecap="round"/>
     <g class="eyes">
-      <ellipse cx="91" cy="78" rx="11" ry="12" fill="#fff" stroke="#6e4a2a" stroke-width="1.5"/>
-      <ellipse cx="129" cy="78" rx="11" ry="12" fill="#fff" stroke="#6e4a2a" stroke-width="1.5"/>
-      <g id="pupils"><circle cx="93" cy="80" r="6.5" fill="#241a12"/><circle cx="95.5" cy="77" r="2.3" fill="#fff"/>
-        <circle cx="127" cy="80" r="6.5" fill="#241a12"/><circle cx="129.5" cy="77" r="2.3" fill="#fff"/></g>
+      <ellipse cx="91" cy="78" rx="12" ry="13.5" fill="#fff" stroke="#6e4a2a" stroke-width="1.5"/>
+      <ellipse cx="129" cy="78" rx="12" ry="13.5" fill="#fff" stroke="#6e4a2a" stroke-width="1.5"/>
+      <g id="pupils"><circle cx="93" cy="81" r="7.2" fill="#241a12"/><circle cx="95.8" cy="77.5" r="2.7" fill="#fff"/><circle cx="90.5" cy="84" r="1.4" fill="#fff" opacity=".8"/>
+        <circle cx="127" cy="81" r="7.2" fill="#241a12"/><circle cx="129.8" cy="77.5" r="2.7" fill="#fff"/><circle cx="124.5" cy="84" r="1.4" fill="#fff" opacity=".8"/></g>
     </g>
     <ellipse cx="110" cy="98" rx="14" ry="11" fill="#241a12"/><ellipse cx="106" cy="95" rx="4" ry="3" fill="#5a4632"/>
     <path class="mouth" d="M110 109 q-15 16 -28 5 M110 109 q15 16 28 5" stroke="#241a12" stroke-width="3.5" fill="none" stroke-linecap="round"/>
@@ -1622,10 +1630,13 @@ function dogSVG(){ return `
 // the lazy cat — shown during the feminine section (sleeps, snoozy Zzz)
 function catSVG(){ return `
 <svg class="cat" viewBox="0 0 220 178" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <defs><radialGradient id="catG" cx="42%" cy="28%" r="82%"><stop offset="0%" stop-color="#AEB6C0"/><stop offset="100%" stop-color="#828B96"/></radialGradient></defs>
+  <defs>
+    <radialGradient id="catG" cx="40%" cy="24%" r="86%"><stop offset="0%" stop-color="#BFC6D0"/><stop offset="55%" stop-color="#A3ABB6"/><stop offset="100%" stop-color="#7C8590"/></radialGradient>
+    <filter id="catShad" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3.5" stdDeviation="4.5" flood-color="#2c333d" flood-opacity="0.22"/></filter>
+  </defs>
   <ellipse class="shadow" cx="110" cy="166" rx="50" ry="8"/>
   <g class="catz"><text class="z z1" x="150" y="58" font-size="18" font-weight="800" fill="#9aa3b2">z</text><text class="z z2" x="167" y="46" font-size="14" font-weight="800" fill="#9aa3b2">z</text><text class="z z3" x="180" y="36" font-size="11" font-weight="800" fill="#9aa3b2">z</text></g>
-  <g id="cat">
+  <g id="cat" filter="url(#catShad)">
     <path id="cattail" d="M150 150 q42 6 38 -34 q-6 30 -32 24 z" fill="#828B96" stroke="#5f6772" stroke-width="2.5"/>
     <ellipse cx="110" cy="148" rx="46" ry="34" fill="url(#catG)" stroke="#5f6772" stroke-width="3"/>
     <ellipse cx="110" cy="158" rx="28" ry="20" fill="#C9CFD6"/>
