@@ -411,6 +411,8 @@ body {
 .preps-details summary:before { content:'▸ '; }
 .preps-details[open] summary:before { content:'▾ '; }
 .preps-details .preps-wrap { margin-top:6px; }
+.adj-rule { font-size:11.5px; color:var(--text-dim); line-height:1.55; margin-top:8px; padding:0 4px; }
+.adj-rule b { color:var(--accent); }
 /* ---- code-generated cute dog (max-effort animation) ---- */
 .dog-stage { max-width:440px; margin:8px auto 18px; height:178px; position:relative; }
 .dog-stage .dog { display:block; width:216px; height:auto; margin:0 auto; overflow:visible; }
@@ -1495,6 +1497,17 @@ function anchorsHTML(){
     `<div class="anchors-head" style="margin-top:12px">🐱 the cat — lazy</div>`+
     cat.map(([a,i])=>card(a,i)).join('');
 }
+function adjHTML(){
+  const rows=[
+    {de:'der nett<b>e</b> Hund', tag:'he’s doing it · <b>-e</b>'},
+    {de:'ich sehe den nett<b>en</b> Hund', tag:'happens to him · <b>-en</b>'},
+    {de:'ich gebe dem nett<b>en</b> Hund …', tag:'he gets it · <b>-en</b>'},
+    {de:'der Knochen des nett<b>en</b> Hundes', tag:'it’s his · <b>-en</b>'},
+  ];
+  return `<div class="anchors-head">🐕 “the NICE dog” — nett + a soft tail</div>`+
+    rows.map(r=>`<div class="anchor"><div class="an-de">${r.de}</div><div class="an-sub">${r.tag}</div></div>`).join('')+
+    `<div class="adj-rule"><b>-e</b> when he’s the doer · <b>-en</b> for the other three. The describing word relaxes — der/den/dem/des already showed the job. The lazy cat copies herself: die nett<b>e</b>, die nett<b>e</b>, der nett<b>en</b>, der nett<b>en</b>.</div>`;
+}
 function spineHTML(){
   let h='<div class="spine-head"><span></span><span>Nom</span><span>Akk</span><span>Dat</span><span>Gen</span></div>';
   for(const s of SPINES){ h+=`<div class="spine ${s.cls}"><span class="sp-lab">${s.emoji}</span>`+s.words.map((w,i)=>`<span class="sp-w" id="${s.pre}${i}">${w}</span>`).join('')+`</div>`; }
@@ -1601,6 +1614,9 @@ function renderLoop(){
       <div class="spine-wrap">${spineHTML()}</div>
       <div class="hooks-row">${hooksHTML()}</div>
       <div class="anchors-wrap">${anchorsHTML()}</div>
+      <details class="preps-details"><summary>Describing words — “the nice dog” (-e / -en) · level up</summary>
+        <div class="anchors-wrap">${adjHTML()}</div>
+      </details>
       <details class="preps-details"><summary>Bossy little words — they pick the case for you (optional)</summary>
         <div class="preps-wrap">${prepHTML()}</div>
       </details>
