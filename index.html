@@ -429,7 +429,7 @@ body {
 .bs-people b { color:var(--accent); }
 /* ---- code-generated cute dog (max-effort animation) ---- */
 .dog-stage { max-width:440px; margin:8px auto 18px; height:178px; position:relative; }
-.dog-stage .dog { display:block; width:216px; height:auto; margin:0 auto; overflow:visible; }
+.dog-stage .dog { position:absolute; left:0; right:0; width:216px; height:auto; margin:0 auto; overflow:visible; transition:opacity .45s ease; }
 .dog-stage .shadow { fill:rgba(0,0,0,.18); transform-box:fill-box; transform-origin:50% 50%; }
 .dog-stage .prop { opacity:0; }
 .dog-stage .speed line { stroke:#9aa3b2; stroke-width:3; stroke-linecap:round; }
@@ -522,9 +522,9 @@ body {
 @keyframes happyHop { 0%,100%{transform:translateY(0) scaleY(.95) scaleX(1.05)} 45%{transform:translateY(-20px) scaleY(1.08) scaleX(.94)} 70%{transform:translateY(0) scaleY(.95) scaleX(1.05)} }
 
 /* the lazy cat (feminine section) */
-.dog-stage .cat { display:none; width:210px; height:auto; margin:0 auto; overflow:visible; }
-.dog-stage[data-char="cat"] .dog { display:none; }
-.dog-stage[data-char="cat"] .cat { display:block; }
+.dog-stage .cat { position:absolute; left:0; right:0; width:210px; height:auto; margin:0 auto; overflow:visible; opacity:0; transition:opacity .45s ease; }
+.dog-stage[data-char="cat"] .dog { opacity:0; }
+.dog-stage[data-char="cat"] .cat { opacity:1; }
 #cat { transform-box:fill-box; transform-origin:50% 96%; animation:breathe 3.6s ease-in-out infinite; }
 #cattail { transform-box:fill-box; transform-origin:4% 60%; animation:catflick 2.4s ease-in-out infinite; }
 #catearL,#catearR { transform-box:fill-box; transform-origin:50% 100%; animation:earSway 3.6s ease-in-out infinite; }
@@ -1501,15 +1501,15 @@ const SPINES=[
 const HOOKCARDS=[
   {id:'hk0', emoji:'🏃', big:'de<u>r</u>', line:'R → he RUNS'},
   {id:'hk1', emoji:'🕸️', big:'de<u>n</u>', line:'N → in a NET'},
-  {id:'hk2', emoji:'🤲', big:'de<u>m</u>', line:'M → to hiM'},
-  {id:'hk3', emoji:'🐾', big:'de<u>s</u>', line:'S → the dog’S'},
+  {id:'hk2', emoji:'🤲', big:'de<u>m</u>', line:'M → a Marrow bone, to hiM'},
+  {id:'hk3', emoji:'🦴', big:'de<u>s</u>', line:'S → his Stick'},
 ];
 // an0-3 = the dog (masc), an4-7 = the cat (fem, the lazy one)
 const ANCHORS=[
   {grp:'dog', de:'<b>der</b> Hund läuft', tag:'he’s doing it', en:'the dog runs (R)'},
   {grp:'dog', de:'ich sehe <b>den</b> Hund', tag:'it happens to him', en:'I see the dog (caught in a Net)'},
-  {grp:'dog', de:'ich gebe <b>dem</b> Hund einen Knochen', tag:'he gets something', en:'I give the dog a bone'},
-  {grp:'dog', de:'der Knochen <b>des</b> Hundes', tag:'it’s his', en:'the dog’s bone'},
+  {grp:'dog', de:'ich gebe <b>dem</b> Hund einen <b>M</b>arkknochen', tag:'he gets something', en:'a Marrow bone (M)'},
+  {grp:'dog', de:'der <b>S</b>tock <b>des</b> Hundes', tag:'it’s his', en:'the dog’s Stick (S)'},
   {grp:'cat', de:'<b>die</b> Katze schläft', tag:'she’s doing it', en:'the cat sleeps'},
   {grp:'cat', de:'ich sehe <b>die</b> Katze', tag:'it happens to her', en:'I see the cat — still die!'},
   {grp:'cat', de:'ich gebe <b>der</b> Katze Milch', tag:'she gets something', en:'I give the cat milk — now der'},
@@ -1533,7 +1533,7 @@ function adjHTML(){
   ];
   return `<div class="anchors-head">🐕 “the NICE dog” — nett + a soft tail</div>`+
     rows.map(r=>`<div class="anchor"><div class="an-de">${r.de}</div><div class="an-sub">${r.tag}</div></div>`).join('')+
-    `<div class="adj-rule">The ending just <b>copies how lazy the “the” was</b>. 🐕 Dog: soft <b>-e</b> only for the doer (der nett<b>e</b>), then <b>-en</b>. 🐱 Lazy cat: <b>-e</b> for both her first jobs (die nett<b>e</b>, die nett<b>e</b>), then <b>-en</b>, <b>-en</b>.</div>`;
+    `<div class="adj-rule">The ending just <b>copies how lazy the “the” was</b>. 🐕 Dog: soft <b>-e</b> only for the doer (der nett<b>e</b>), then <b>-en</b>. 🐱 Lazy cat: <b>-e</b> for both her first jobs (die nett<b>e</b>, die nett<b>e</b>), then <b>-en</b>, <b>-en</b>. 🍼 Little-one: das groß<b>e</b> Haus — soft <b>-e</b> whenever you point at it.</div>`;
 }
 function capstoneHTML(){
   return `<div class="anchors-head">🏆 the big one — every job in one sentence</div>
@@ -1652,6 +1652,7 @@ function setDogFromCue(c){
   else if(hi.includes('hk1')) s='caught';
   else if(hi.includes('hk2')) s='bone';
   else if(hi.includes('hk3')) s='proud';
+  else if(hi.some(x=>/^bs[0-4]$/.test(x))) s='proud';   // capstone — proud little celebration
   else if(hi.some(x=>/^m[0-3]$/.test(x))) s='happy';
   else if(isCat) s='idle';
   if(s) setDogState(s);
